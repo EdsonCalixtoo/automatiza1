@@ -30,7 +30,7 @@ export function CTA() {
 
           <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Pronto para{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300">
               inovar
             </span>
             {" "}sua van?
