@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Zap, ChevronDown, Shield, Truck, Award, ShoppingCart, RefreshCw, Play } from "lucide-react";
+import { Menu, X, Zap, ChevronDown, Shield, Truck, Award, RefreshCw, Play, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CartIcon } from "@/components/CartIcon";
+import { AuthButton } from "@/components/AuthButton";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import logoAutomatiza from "@/assets/Automatiza-logo-rgb-01.jpg";
+
+const ADMIN_EMAIL = "juninho.caxto@gmail.com";
 
 const navLinks = [
   { href: "/", label: "Início" },
@@ -25,6 +30,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-3 px-4 flex justify-center">
@@ -84,7 +90,9 @@ export function Header() {
             </nav>
 
             {/* CTA Button */}
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-3">
+              <CartIcon />
+              <AuthButton />
               <a 
                 href="https://wa.me/5519989429972" 
                 target="_blank" 
@@ -171,6 +179,36 @@ export function Header() {
                     Fale Conosco
                   </Button>
                 </a>
+
+                <Link
+                  to="/minha-conta"
+                  className="mt-4 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Button 
+                    size="default" 
+                    variant="outline"
+                    className="w-full border-2 border-cyan-600 text-cyan-600 hover:bg-cyan-50 font-semibold"
+                  >
+                    👤 Minha Conta
+                  </Button>
+                </Link>
+
+                {user && user.email === ADMIN_EMAIL && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="mt-2 block"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Button 
+                      size="default" 
+                      variant="outline"
+                      className="w-full border-2 border-gray-300 text-gray-600 hover:bg-gray-50 font-semibold"
+                    >
+                      📊 Dashboard Admin
+                    </Button>
+                  </Link>
+                )}
               </nav>
             </div>
           )}

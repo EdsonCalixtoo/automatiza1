@@ -118,3 +118,25 @@
     transform: translateY(-10px);
   }
 }
+/* Estilizar select elements */
+select {
+  color-scheme: dark;
+  background-color: rgba(15, 23, 42, 0.8);
+}
+
+select option {
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 10px;
+}
+
+select option:hover {
+  background-color: #0ea5e9;
+  color: #ffffff;
+}
+
+select option:checked {
+  background: linear-gradient(#0ea5e9, #0ea5e9);
+  background-color: #0ea5e9 !important;
+  color: #ffffff;
+}

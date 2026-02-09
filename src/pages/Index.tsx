@@ -6,7 +6,6 @@ import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { ReplacementParts } from "@/components/home/ReplacementParts";
 import { AllProducts } from "@/components/home/AllProducts";
 import { Testimonials } from "@/components/home/Testimonials";
-import { ProductsPreview } from "@/components/home/ProductsPreview";
 import { CTA } from "@/components/home/CTA";
 
 const Index = () => {
@@ -19,7 +18,6 @@ const Index = () => {
       <ReplacementParts />
       <AllProducts />
       <Testimonials />
-      <ProductsPreview />
       <CTA />
     </Layout>
   );

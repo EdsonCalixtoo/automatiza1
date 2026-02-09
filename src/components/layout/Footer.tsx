@@ -75,11 +75,11 @@ export function Footer() {
                 (19) 98942-9972
               </a>
               <a 
-                href="mailto:contato@inovar.com.br" 
+                href="mailto:contato@grupoautomatiza.com.br" 
                 className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors text-sm"
               >
                 <Mail className="w-4 h-4 text-cyan-500" />
-                contato@inovar.com.br
+                contato@grupoautomatiza.com.br
               </a>
               <div className="flex items-start gap-3 text-gray-400 text-sm">
                 <MapPin className="w-4 h-4 mt-0.5 text-cyan-500" />
@@ -93,19 +93,19 @@ export function Footer() {
             <h4 className="font-heading font-semibold text-lg text-white">Redes Sociais</h4>
             <div className="flex gap-3">
               <a 
-                href="#" 
+                href="https://www.instagram.com/automatiza_vans" 
                 className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-cyan-600 flex items-center justify-center transition-colors text-gray-400 hover:text-white"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://www.facebook.com/automatiza.portas.automatica?locale=pt_BR" 
                 className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-cyan-600 flex items-center justify-center transition-colors text-gray-400 hover:text-white"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://www.youtube.com/@Grupoautomatiza" 
                 className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-cyan-600 flex items-center justify-center transition-colors text-gray-400 hover:text-white"
               >
                 <Youtube className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
-            © 2024 INOVAR. Todos os direitos reservados.
+            © 2026 Automatiza. Todos os direitos reservados.
           </p>
           <p className="text-gray-400 text-sm">
             Inovação em automação de vans

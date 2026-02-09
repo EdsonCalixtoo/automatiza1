@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import vehicleImage from "@/assets/OIG4.jpg";
+import { BRAND_LOGOS } from "@/data/brandLogos";
 
 interface Vehicle {
   id: string;
@@ -79,6 +80,9 @@ const vehicles: Vehicle[] = [
 
 export function VehiclesCatalog() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
+
+  const visibleVehicles = vehicles.slice(0, visibleCount);
 
   return (
     <section className="py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
@@ -102,14 +106,23 @@ export function VehiclesCatalog() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vehicles.map((vehicle) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {visibleVehicles.map((vehicle) => (
             <div
               key={vehicle.id}
               onMouseEnter={() => setHoveredId(vehicle.id)}
               onMouseLeave={() => setHoveredId(null)}
               className="group relative rounded-3xl overflow-hidden bg-white shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-cyan-200"
             >
+              {/* Brand Logo Badge */}
+              <div className="absolute top-4 left-4 z-20 w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg border-4 border-white overflow-hidden">
+                <img 
+                  src={BRAND_LOGOS[vehicle.name]} 
+                  alt={vehicle.name}
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+
               {/* Image Container */}
               <div className="relative h-64 overflow-hidden bg-gradient-to-b from-cyan-600 to-cyan-700">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
@@ -164,6 +177,19 @@ export function VehiclesCatalog() {
             </div>
           ))}
         </div>
+
+        {/* Load More Button */}
+        {visibleCount < vehicles.length && (
+          <div className="mt-12 text-center">
+            <Button 
+              onClick={() => setVisibleCount(prev => prev + 3)}
+              size="lg"
+              className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-10 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              Veja Mais Modelos
+            </Button>
+          </div>
+        )}
 
         {/* CTA */}
         <div className="mt-16 text-center">

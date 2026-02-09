@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Sparkles, Zap, Shield } from "lucide-react";
-import { products } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
+import { formatCurrency } from "@/lib/utils";
 
 export function ProductsPreview() {
-  const mainProducts = products.filter(p => p.category === "completo" || p.category === "simples");
+  const { products } = useProducts();
+  const mainProducts = products.filter(p => p.category?.includes("Kits") || p.category === "completo" || p.category === "simples").slice(0, 2);
 
   return (
     <section className="py-24 relative overflow-hidden bg-gradient-to-b from-white via-cyan-50/30 to-white">
@@ -66,6 +68,20 @@ export function ProductsPreview() {
                     <h3 className="font-heading text-2xl font-bold text-gray-900">
                       {product.name}
                     </h3>
+                    
+                    {/* Categoria */}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {product.category && (
+                        <span className="inline-flex items-center gap-1 bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">
+                          {product.category}
+                        </span>
+                      )}
+                      {product.subcategory && (
+                        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                          {product.subcategory}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-6 leading-relaxed">
@@ -90,16 +106,16 @@ export function ProductsPreview() {
                 <div className="flex items-baseline gap-3 mb-8">
                   {product.originalPrice && (
                     <span className="text-gray-400 line-through text-sm font-medium">
-                      R$ {product.originalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {formatCurrency(product.originalPrice)}
                     </span>
                   )}
                   <div className="flex flex-col">
                     <span className="font-heading text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-500">
-                      R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {formatCurrency(product.price)}
                     </span>
                     {product.originalPrice && (
                       <span className="text-xs text-green-600 font-semibold mt-1">
-                        Economize R$ {(product.originalPrice - product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        Economize {formatCurrency(product.originalPrice - product.price)}
                       </span>
                     )}
                   </div>
