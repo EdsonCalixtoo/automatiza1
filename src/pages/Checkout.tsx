@@ -4,7 +4,7 @@ import { useProducts } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/lib/utils";
-import { Heart, Trash2, MapPin, CreditCard, ArrowLeft, Check, AlertCircle, Lock, Zap, Shield, Truck, Package, Loader } from "lucide-react";
+import { Heart, Trash2, MapPin, CreditCard, ArrowLeft, Check, AlertCircle, Lock, Zap, Shield, Truck, Package, Loader, Gift, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -47,7 +47,7 @@ interface FormErrors {
 
 export default function Checkout() {
   const { items, removeFromCart, total } = useCart();
-  const { products } = useProducts();
+  const { products, useCoupon } = useProducts();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -76,6 +76,12 @@ export default function Checkout() {
   const [shippingCost, setShippingCost] = useState(0);
   const [shippingTime, setShippingTime] = useState("");
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+
+  // Coupon discount states
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
 
   // Carregar dados do perfil quando usuário está logado
   useEffect(() => {
@@ -158,6 +164,62 @@ export default function Checkout() {
     }
   };
 
+  // Aplicar cupom de desconto
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      setCouponMessage("Digite um código de cupom");
+      setCouponApplied(false);
+      return;
+    }
+
+    const result = useCoupon(couponCode);
+    
+    if (result.valid) {
+      setCouponDiscount(result.discount || 0);
+      setCouponMessage(result.message);
+      setCouponApplied(true);
+    } else {
+      setCouponDiscount(0);
+      setCouponMessage(result.message);
+      setCouponApplied(false);
+    }
+  };
+
+  // Remover cupom de desconto
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    setCouponDiscount(0);
+    setCouponMessage("");
+    setCouponApplied(false);
+  };
+
+  // Formatar telefone com máscara (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX
+  const handlePhoneChange = (value: string) => {
+    const cleanPhone = value.replace(/\D/g, "");
+
+    let formattedPhone = "";
+
+    if (cleanPhone.length > 0) {
+      if (cleanPhone.length <= 2) {
+        // Apenas códígigo de área: (XX
+        formattedPhone = `(${cleanPhone}`;
+      } else if (cleanPhone.length <= 7) {
+        // Até 7 dígitos: (XX) 9XXXX ou (XX) XXXX
+        const areaCode = cleanPhone.substring(0, 2);
+        const firstPart = cleanPhone.substring(2, 7);
+        formattedPhone = `(${areaCode}) ${firstPart}`;
+      } else {
+        // Mais de 7 dígitos: (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX
+        const areaCode = cleanPhone.substring(0, 2);
+        const firstPart = cleanPhone.substring(2, 7);
+        const secondPart = cleanPhone.substring(7, 11);
+        formattedPhone = `(${areaCode}) ${firstPart}-${secondPart}`;
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, phone: formattedPhone }));
+  };
+
   // Validar campos obrigatórios
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -230,7 +292,9 @@ export default function Checkout() {
       items: enrichedItems,
       subtotal: total,
       shipping: shippingCost,
-      total: total + shippingCost,
+      discount: couponDiscount,
+      couponCode: couponCode || null,
+      total: total + shippingCost - couponDiscount,
       paymentMethod: formData.paymentMethod,
       status: "pendente",
     };
@@ -265,7 +329,7 @@ export default function Checkout() {
   };
 
   const itemsSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const finalTotal = itemsSubtotal + shippingCost;
+  const finalTotal = itemsSubtotal + shippingCost - couponDiscount;
 
   // Tela de sucesso animada
   if (showSuccessScreen) {
@@ -561,8 +625,8 @@ export default function Checkout() {
                         <Input
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                          placeholder="(11) 98765-4321"
+                          onChange={(e) => handlePhoneChange(e.target.value)}
+                          placeholder="(19) 99691-2323"
                           className={`w-full px-5 py-4 rounded-2xl border-2 transition-all backdrop-blur-sm font-semibold ${errors.phone ? "border-red-400 bg-red-50/50" : "border-blue-200 bg-blue-50/30 focus:border-blue-500 focus:bg-blue-50/50"}`}
                         />
                         {errors.phone && (
@@ -879,6 +943,75 @@ export default function Checkout() {
                     )}
                   </div>
 
+                  {/* 5. Cupom de Desconto - PREMIUM */}
+                  <div className="group bg-gradient-to-br from-white via-green-50/20 to-white rounded-3xl p-8 border-2 border-green-200/50 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-green-300/80 animate-fade-in"
+                    style={{ animationDelay: "0.35s" }}>
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-300/50 backdrop-blur-sm">
+                        <Gift className="w-8 h-8 text-green-600" />
+                      </div>
+                      <h2 className="text-3xl font-black text-gray-900">Cupom de Desconto</h2>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex gap-3">
+                        <Input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value.toUpperCase());
+                            setCouponMessage("");
+                          }}
+                          onKeyPress={(e) => e.key === "Enter" && handleApplyCoupon()}
+                          placeholder="Digite o código do cupom"
+                          disabled={couponApplied}
+                          className="flex-1 px-5 py-4 rounded-2xl border-2 border-green-200 bg-green-50/30 focus:border-green-500 focus:bg-green-50/50 transition-all backdrop-blur-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        {!couponApplied ? (
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-2xl transition-all active:scale-95 hover:shadow-lg shadow-md border border-green-400/50 flex items-center gap-2"
+                          >
+                            <Zap className="w-5 h-5" />
+                            Aplicar
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleRemoveCoupon}
+                            className="px-8 py-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold rounded-2xl transition-all active:scale-95 hover:shadow-lg shadow-md border border-red-400/50 flex items-center gap-2"
+                          >
+                            <X className="w-5 h-5" />
+                            Remover
+                          </button>
+                        )}
+                      </div>
+
+                      {couponMessage && (
+                        <div className={`p-4 rounded-2xl border-2 font-bold flex items-center gap-3 ${
+                          couponApplied 
+                            ? "bg-green-50/80 border-green-300/50 text-green-700" 
+                            : "bg-red-50/80 border-red-300/50 text-red-700"
+                        }`}>
+                          {couponApplied ? (
+                            <Check className="w-5 h-5 flex-shrink-0" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                          )}
+                          {couponMessage}
+                        </div>
+                      )}
+
+                      {couponApplied && couponDiscount > 0 && (
+                        <div className="bg-gradient-to-r from-green-100/80 to-emerald-100/80 border-2 border-green-300/50 rounded-2xl p-4 text-center">
+                          <p className="text-sm text-gray-700 font-semibold mb-2">Desconto Aplicado</p>
+                          <p className="text-3xl font-black text-green-600">{formatCurrency(couponDiscount)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Botão Finalizar */}
                   <button
                     type="submit"
@@ -920,6 +1053,16 @@ export default function Checkout() {
                             Frete
                           </span>
                           <span className="font-black text-gray-900 text-2xl">{formatCurrency(shippingCost)}</span>
+                        </div>
+                      )}
+
+                      {couponDiscount > 0 && (
+                        <div className="flex justify-between items-end text-green-600">
+                          <span className="font-bold text-lg flex items-center gap-2">
+                            <Gift className="w-5 h-5" />
+                            Desconto
+                          </span>
+                          <span className="font-black text-2xl">-{formatCurrency(couponDiscount)}</span>
                         </div>
                       )}
 

@@ -11,6 +11,33 @@ const Contact = () => {
     message: ""
   });
 
+  // Formatar telefone com máscara (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX
+  const handlePhoneChange = (value: string) => {
+    const cleanPhone = value.replace(/\D/g, "");
+
+    let formattedPhone = "";
+
+    if (cleanPhone.length > 0) {
+      if (cleanPhone.length <= 2) {
+        // Apenas códígigo de área: (XX
+        formattedPhone = `(${cleanPhone}`;
+      } else if (cleanPhone.length <= 7) {
+        // Até 7 dígitos: (XX) 9XXXX ou (XX) XXXX
+        const areaCode = cleanPhone.substring(0, 2);
+        const firstPart = cleanPhone.substring(2, 7);
+        formattedPhone = `(${areaCode}) ${firstPart}`;
+      } else {
+        // Mais de 7 dígitos: (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX
+        const areaCode = cleanPhone.substring(0, 2);
+        const firstPart = cleanPhone.substring(2, 7);
+        const secondPart = cleanPhone.substring(7, 11);
+        formattedPhone = `(${areaCode}) ${firstPart}-${secondPart}`;
+      }
+    }
+
+    setFormData({ ...formData, phone: formattedPhone });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const message = `Olá! Meu nome é ${formData.name}.%0A%0A${formData.message}%0A%0AContato: ${formData.phone}%0AEmail: ${formData.email}`;
@@ -166,9 +193,9 @@ const Contact = () => {
                       type="tel"
                       required
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder="(00) 00000-0000"
+                      placeholder="(19) 99691-2323"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
                     />
                   </div>
                 </div>
