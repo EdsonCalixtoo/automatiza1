@@ -1,0 +1,73 @@
+#!/bin/bash
+# Script para conectar com Supabase - Checklist
+
+echo "📋 CHECKLIST DE CONFIGURAÇÃO SUPABASE"
+echo "======================================"
+echo ""
+
+echo "✅ ARQUIVOS CRIADOS:"
+echo "  1. src/lib/supabase.ts - Cliente Supabase"
+echo "  2. src/contexts/AuthContext.tsx - Contexto de autenticação"
+echo "  3. src/pages/Login.tsx - Página de login/cadastro"
+echo "  4. src/components/AuthButton.tsx - Botão de autenticação"
+echo "  5. src/components/ProtectedRoute.tsx - Rotas protegidas"
+echo "  6. .env.example - Exemplo de variáveis"
+echo "  7. .env.local.example - Exemplo de .env.local"
+echo "  8. SUPABASE_SETUP.md - Guia de configuração"
+echo "  9. README_AUTH.md - Guia de uso prático"
+echo ""
+
+echo "✅ ARQUIVOS ATUALIZADOS:"
+echo "  1. src/App.tsx - AuthProvider e rotas protegidas"
+echo "  2. src/components/layout/Header.tsx - AuthButton integrado"
+echo "  3. package.json - @supabase/supabase-js instalado"
+echo ""
+
+echo "🚀 PRÓXIMOS PASSOS:"
+echo ""
+echo "1. Criar projeto no Supabase:"
+echo "   → Acesse https://supabase.com"
+echo "   → Crie um novo projeto"
+echo ""
+
+echo "2. Obter credenciais:"
+echo "   → Dashboard > Settings > API"
+echo "   → Copie URL e Anon Key"
+echo ""
+
+echo "3. Criar arquivo .env.local:"
+echo "   → Copie de .env.local.example"
+echo "   → Preencha com suas credenciais:"
+echo ""
+echo "   VITE_SUPABASE_URL=https://seu-projeto.supabase.co"
+echo "   VITE_SUPABASE_ANON_KEY=sua-chave-aqui"
+echo ""
+
+echo "4. Reiniciar servidor:"
+echo "   → npm run dev"
+echo ""
+
+echo "5. Testar funcionalidade:"
+echo "   → Acesse http://localhost:5173/login"
+echo "   → Crie uma conta ou faça login"
+echo ""
+
+echo "📚 DOCUMENTAÇÃO:"
+echo "  → SUPABASE_SETUP.md - Configuração detalhada"
+echo "  → README_AUTH.md - Exemplos de código"
+echo "  → Documentação oficial: https://supabase.com/docs"
+echo ""
+
+echo "✨ FUNCIONALIDADES IMPLEMENTADAS:"
+echo "  ✓ Login com email/senha"
+echo "  ✓ Cadastro de nova conta"
+echo "  ✓ Logout"
+echo "  ✓ Proteção de rotas"
+echo "  ✓ Verificação de autenticação"
+echo "  ✓ Botão de autenticação no header"
+echo "  ✓ Menu dropdown da conta"
+echo ""
+
+echo "======================================"
+echo "✅ CONFIGURAÇÃO COMPLETA!"
+echo "======================================"
