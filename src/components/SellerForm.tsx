@@ -11,6 +11,7 @@ interface SellerFormProps {
 }
 
 const AVAILABLE_CATEGORIES = [
+  "Portas Automáticas",
   "Kits Completos",
   "Peças Individuais",
   "Cremalheira",
