@@ -89,7 +89,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             console.error("   Hints:", error.hint);
             // Fallback para localStorage
             loadFromLocalStorage();
-          } else if (data) {
+          } else if (data && Array.isArray(data)) {
             console.log(`✅ ${data.length} produtos carregados do Supabase`);
             const formattedProducts: Product[] = data.map((p: any) => ({
               id: p.id,
@@ -142,8 +142,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          console.log(`✅ ${parsed.length} produtos carregados do localStorage`);
-          setProducts(parsed);
+          const safeProducts = Array.isArray(parsed) ? parsed : [];
+          console.log(`✅ ${safeProducts.length} produtos carregados do localStorage`);
+          setProducts(safeProducts);
         } catch {
           console.error("❌ Erro ao parsear localStorage");
           setProducts([]);
@@ -167,7 +168,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           console.error("❌ Erro ao carregar cupons:", error);
           loadCouponsFromLocalStorage();
-        } else if (data) {
+        } else if (data && Array.isArray(data)) {
           const formatted: Coupon[] = data.map((c: any) => ({
             id: c.id,
             code: c.code,
@@ -195,10 +196,13 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem("coupons");
       if (saved) {
         try {
-          setCoupons(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          setCoupons(Array.isArray(parsed) ? parsed : []);
         } catch {
           setCoupons([]);
         }
+      } else {
+        setCoupons([]);
       }
     };
 

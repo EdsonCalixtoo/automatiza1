@@ -38,6 +38,7 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
   const { addProduct, updateProduct } = useProducts();
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: product?.name || "",
@@ -114,6 +115,32 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
     }).format(realValue);
 
     setDisplayPrice(formatted);
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      alert("❌ Arquivo inválido. Selecione um arquivo de vídeo (MP4, WebM, etc.)");
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      alert(`❌ Vídeo muito grande (máx 100MB, seu arquivo tem ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const videoData = event.target?.result as string;
+      setFormData({ ...formData, videoUrl: videoData });
+      console.log("✅ Vídeo carregado!");
+    };
+    reader.onerror = () => alert("❌ Erro ao carregar o vídeo");
+    reader.readAsDataURL(file);
+
+    if (videoFileInputRef.current) videoFileInputRef.current.value = "";
   };
 
   const handleMultipleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -713,6 +740,129 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
                   </div>
                 )}
               </div>
+
+              {/* ========== SEÇÃO DE VÍDEO ========== */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <Video className="w-5 h-5 text-purple-400" />
+                  <Label className="text-white font-bold">Vídeo do Produto</Label>
+                </div>
+                <p className="text-gray-400 text-sm">Adicione um vídeo demonstrativo que aparecerá na página do produto.</p>
+
+                {/* Input file video hidden */}
+                <input
+                  ref={videoFileInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                />
+
+                {/* Botão usar vídeo padrão */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, videoUrl: "/video-demonstrativo.mp4" })}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-2 border-purple-500/50 hover:border-purple-500 rounded-xl transition-all flex items-center justify-center gap-3 hover:bg-purple-600/20 group"
+                >
+                  <div className="p-2 bg-purple-600/30 rounded-lg group-hover:bg-purple-600/50 transition-all">
+                    <Video className="w-5 h-5 text-purple-300" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Usar vídeo demonstrativo padrão</p>
+                    <p className="text-gray-400 text-xs">video-demonstrativo.mp4 (já cadastrado no sistema)</p>
+                  </div>
+                  {formData.videoUrl === "/video-demonstrativo.mp4" && (
+                    <span className="ml-auto text-green-400 text-xs font-bold bg-green-400/20 px-2 py-1 rounded-lg">✓ Selecionado</span>
+                  )}
+                </button>
+
+                {/* OU fazer upload */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-gray-500 text-xs font-bold">OU</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => videoFileInputRef.current?.click()}
+                  className="w-full py-3 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-xl transition-all flex items-center justify-center gap-3 hover:bg-white/5 group"
+                >
+                  <div className="p-2 bg-purple-600/20 rounded-lg group-hover:bg-purple-600/40 transition-all">
+                    <Upload className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Fazer upload de vídeo</p>
+                    <p className="text-gray-400 text-xs">MP4, WebM, MOV — máx. 100MB</p>
+                  </div>
+                </button>
+
+                {/* Preview do vídeo selecionado */}
+                {formData.videoUrl && (
+                  <div className="space-y-2">
+                    <div className="relative rounded-xl overflow-hidden border-2 border-purple-500/40 bg-black aspect-video">
+                      <video
+                        key={formData.videoUrl}
+                        controls
+                        className="w-full h-full object-contain"
+                        poster="/ftproduto.jpeg"
+                      >
+                        <source src={formData.videoUrl} />
+                        Seu navegador não suporta vídeos.
+                      </video>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-green-400 text-xs font-bold flex items-center gap-1">
+                        <span>✓</span>
+                        <span>
+                          {formData.videoUrl === "/video-demonstrativo.mp4"
+                            ? "Vídeo padrão selecionado"
+                            : formData.videoUrl.startsWith("data:")
+                            ? "Vídeo carregado do computador"
+                            : "Vídeo por URL"}
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, videoUrl: "" })}
+                        className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" /> Remover
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Campo URL manual (opcional) */}
+                {!formData.videoUrl && (
+                  <div className="pt-1">
+                    <Label className="text-gray-400 text-xs font-bold">Ou cole um link de YouTube / URL do vídeo</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        type="text"
+                        placeholder="https://youtube.com/watch?v=... ou link .mp4"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            const val = (e.target as HTMLInputElement).value;
+                            if (val) setFormData({ ...formData, videoUrl: val });
+                          }
+                        }}
+                        className="flex-1 bg-white/10 border-2 border-purple-500/30 text-white placeholder:text-gray-500 h-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                          if (input.value) setFormData({ ...formData, videoUrl: input.value });
+                        }}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all font-semibold text-sm"
+                      >
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -777,35 +927,43 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
               <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl p-4 md:p-6 border border-purple-500/30 space-y-4">
                 <h3 className="text-white font-bold flex items-center gap-2">
                   <Video className="w-5 h-5 text-purple-400" />
-                  Mídias do Produto
+                  Status do Vídeo
                 </h3>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-white font-bold text-xs uppercase">Vídeo (MP4 ou YouTube URL)</Label>
-                    <Input
-                      type="text"
-                      placeholder="Ex: https://youtube.com/watch?v=... ou link direto .mp4"
-                      value={formData.videoUrl}
-                      onChange={(e) =>
-                        setFormData({ ...formData, videoUrl: e.target.value })
-                      }
-                      className="bg-white/10 border-2 border-purple-500/30 text-white placeholder:text-gray-400"
-                    />
-                  </div>
 
+                {formData.videoUrl ? (
                   <div className="space-y-2">
-                    <Label className="text-white font-bold text-xs uppercase">Áudio (MP3 URL)</Label>
-                    <Input
-                      type="text"
-                      placeholder="Ex: https://.../demo.mp3"
-                      value={formData.audioUrl}
-                      onChange={(e) =>
-                        setFormData({ ...formData, audioUrl: e.target.value })
-                      }
-                      className="bg-white/10 border-2 border-pink-500/30 text-white placeholder:text-gray-400"
-                    />
+                    <p className="text-green-400 text-sm font-bold flex items-center gap-2">
+                      <span>✓</span>
+                      Vídeo configurado — veja e edite na aba <span className="underline cursor-pointer" onClick={() => setActiveSection("basico")}>Informações Básicas</span>
+                    </p>
+                    <p className="text-gray-400 text-xs break-all">
+                      {formData.videoUrl.startsWith("data:") ? "📁 Arquivo carregado do computador" : formData.videoUrl}
+                    </p>
                   </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-gray-400 text-sm mb-3">Nenhum vídeo configurado ainda.</p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("basico")}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-sm transition-all"
+                    >
+                      ← Ir para Informações Básicas para adicionar vídeo
+                    </button>
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-2 border-t border-white/10">
+                  <Label className="text-white font-bold text-xs uppercase">Áudio (MP3 URL)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: https://.../demo.mp3"
+                    value={formData.audioUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, audioUrl: e.target.value })
+                    }
+                    className="bg-white/10 border-2 border-pink-500/30 text-white placeholder:text-gray-400"
+                  />
                 </div>
               </div>
 

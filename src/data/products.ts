@@ -17,9 +17,12 @@ export interface Product {
   category: string;
   subcategory?: string;
   badge?: string;
+  videoUrl?: string;
+  audioUrl?: string;
 }
 
-const PRODUCT_IMAGE = "/OIG4.jpg";
+const PRODUCT_IMAGE = "/ftproduto.jpeg";
+const PRODUCT_VIDEO = "/video-demonstrativo.mp4";
 
 export const products: Product[] = [
   {
@@ -30,7 +33,7 @@ export const products: Product[] = [
     price: 2499.00,
     originalPrice: 2899.00,
     image: PRODUCT_IMAGE,
-    images: [PRODUCT_IMAGE, PRODUCT_IMAGE, PRODUCT_IMAGE],
+    images: [PRODUCT_IMAGE],
     features: [
       "Motor de alta potência e baixo ruído",
       "Cremalheira de aço reforçada",
@@ -50,7 +53,8 @@ export const products: Product[] = [
     warranty: "12 meses de garantia",
     inStock: true,
     category: "completo",
-    badge: "Mais Vendido"
+    badge: "Mais Vendido",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "kit-simples",
@@ -60,7 +64,7 @@ export const products: Product[] = [
     price: 1899.00,
     originalPrice: 2199.00,
     image: PRODUCT_IMAGE,
-    images: [PRODUCT_IMAGE, PRODUCT_IMAGE],
+    images: [PRODUCT_IMAGE],
     features: [
       "Motor de alta potência",
       "Cremalheira de aço",
@@ -77,7 +81,8 @@ export const products: Product[] = [
     ],
     warranty: "12 meses de garantia",
     inStock: true,
-    category: "simples"
+    category: "simples",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "motor-reposicao",
@@ -101,7 +106,8 @@ export const products: Product[] = [
     ],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "acessorio"
+    category: "acessorio",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "controle-extra",
@@ -124,7 +130,8 @@ export const products: Product[] = [
     ],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "acessorio"
+    category: "acessorio",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "sensor-anti-esmagamento",
@@ -147,7 +154,8 @@ export const products: Product[] = [
     ],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "acessorio"
+    category: "acessorio",
+    videoUrl: PRODUCT_VIDEO,
   },
   // Consumíveis e Peças
   {
@@ -162,7 +170,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Acionador" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-botao",
@@ -176,7 +185,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Botão" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-buchas",
@@ -190,7 +200,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Buchas" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-capa",
@@ -204,7 +215,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Capa Protetora" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-central",
@@ -218,7 +230,8 @@ export const products: Product[] = [
     specs: [{ label: "Voltagem", value: "12V" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-chicote",
@@ -232,7 +245,8 @@ export const products: Product[] = [
     specs: [{ label: "Comprimento", value: "Variável" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-acabamento",
@@ -246,7 +260,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Acabamento" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-fixacao",
@@ -260,7 +275,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Fixação" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-guia-nylon",
@@ -274,7 +290,8 @@ export const products: Product[] = [
     specs: [{ label: "Material", value: "Nylon" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-controle",
@@ -288,7 +305,8 @@ export const products: Product[] = [
     specs: [{ label: "Frequência", value: "433MHz" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-cremalheira",
@@ -302,7 +320,8 @@ export const products: Product[] = [
     specs: [{ label: "Material", value: "Aço" }],
     warranty: "12 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-ima",
@@ -316,7 +335,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Ímã" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-lubrificante",
@@ -330,7 +350,8 @@ export const products: Product[] = [
     specs: [{ label: "Volume", value: "250ml" }],
     warranty: "N/A",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-pinhao",
@@ -344,7 +365,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Pinhão" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-porca",
@@ -358,7 +380,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Porca" }],
     warranty: "N/A",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-protecao-cremalheira",
@@ -372,7 +395,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Proteção" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-rotula",
@@ -386,7 +410,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Rótula" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-sensor",
@@ -400,7 +425,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Sensor" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-sinal-luminoso",
@@ -414,7 +440,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "LED" }],
     warranty: "3 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-suporte-coluna",
@@ -428,7 +455,8 @@ export const products: Product[] = [
     specs: [{ label: "Material", value: "Aço" }],
     warranty: "6 meses de garantia",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   },
   {
     id: "consumivel-parafuso",
@@ -442,7 +470,8 @@ export const products: Product[] = [
     specs: [{ label: "Tipo", value: "Parafuso" }],
     warranty: "N/A",
     inStock: true,
-    category: "consumivel"
+    category: "consumivel",
+    videoUrl: PRODUCT_VIDEO,
   }
 ];
 

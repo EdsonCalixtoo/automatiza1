@@ -64,7 +64,14 @@ const Dashboard = () => {
   useEffect(() => {
     const loadOrders = () => {
       const saved = localStorage.getItem("orders");
-      const loadedOrders = saved ? JSON.parse(saved) : [];
+      let parsedOrders: any[] = [];
+      try {
+        const parsed = saved ? JSON.parse(saved) : [];
+        parsedOrders = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        parsedOrders = [];
+      }
+      const loadedOrders = parsedOrders;
       
       // Converter IDs de número para string se necessário
       const normalizedOrders = loadedOrders.map((order: any) => ({
