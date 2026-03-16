@@ -308,9 +308,9 @@ const Products = () => {
                       {/* Price */}
                       <div className="mb-4 pb-4 border-t border-gray-100">
                         <div className="flex items-baseline gap-2">
-                          {product.originalPrice && (
+                          {(product.originalPrice ?? 0) > 0 && (
                             <span className="text-gray-400 line-through text-xs font-medium">
-                              {formatCurrency(product.originalPrice)}
+                              {formatCurrency(product.originalPrice!)}
                             </span>
                           )}
                           <span className="text-2xl font-bold text-cyan-600">

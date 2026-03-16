@@ -226,9 +226,9 @@ const ProductDetail = () => {
               <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl md:rounded-2xl p-4 md:p-8 border-2 border-cyan-200 shadow-lg">
                 <div className="space-y-3 md:space-y-4">
                   <div className="flex items-end gap-2 md:gap-3">
-                    {product.originalPrice && (
+                    {(product.originalPrice ?? 0) > 0 && (
                       <span className="text-gray-500 line-through text-lg">
-                      {formatCurrency(product.originalPrice)}
+                      {formatCurrency(product.originalPrice!)}
                     </span>
                   )}
                   <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-cyan-600">

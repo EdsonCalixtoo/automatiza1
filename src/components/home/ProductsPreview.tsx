@@ -104,18 +104,18 @@ export function ProductsPreview() {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-3 mb-8">
-                  {product.originalPrice && (
+                  {(product.originalPrice ?? 0) > 0 && (
                     <span className="text-gray-400 line-through text-sm font-medium">
-                      {formatCurrency(product.originalPrice)}
+                      {formatCurrency(product.originalPrice!)}
                     </span>
                   )}
                   <div className="flex flex-col">
                     <span className="font-heading text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-500">
                       {formatCurrency(product.price)}
                     </span>
-                    {product.originalPrice && (
+                    {(product.originalPrice ?? 0) > 0 && (
                       <span className="text-xs text-green-600 font-semibold mt-1">
-                        Economize {formatCurrency(product.originalPrice - product.price)}
+                        Economize {formatCurrency(product.originalPrice! - product.price)}
                       </span>
                     )}
                   </div>
