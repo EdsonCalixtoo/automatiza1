@@ -11,98 +11,14 @@ interface VideoItem {
 
 const videos: VideoItem[] = [
   {
-    id: "1",
-    title: "Instalação Básica Porta Automática",
-    youtubeId: "aQqlXzCEW7U",
-    category: "Básico"
-  },
-  {
-    id: "2",
-    title: "Ajustes e Calibração",
-    youtubeId: "BbZmIRQSiqY",
-    category: "Ajustes"
-  },
-  {
-    id: "3",
-    title: "Instalação Avançada",
-    youtubeId: "-88c266EEU8",
-    category: "Avançado"
-  },
-  {
-    id: "4",
-    title: "Sistema de Segurança",
-    youtubeId: "yCuWzUL44Jk",
-    category: "Segurança"
-  },
-  {
-    id: "5",
-    title: "Manutenção Preventiva",
-    youtubeId: "PnOmYFTUgKc",
-    category: "Manutenção"
-  },
-  {
-    id: "6",
-    title: "Solução de Problemas",
-    youtubeId: "oDUfgTq30nQ",
-    category: "Troubleshooting"
-  },
-  {
-    id: "7",
-    title: "Instalação em Kombi",
-    youtubeId: "fnG2XYtzszg",
-    category: "Modelo"
-  },
-  {
-    id: "8",
-    title: "Instalação em Sprinter",
-    youtubeId: "FYLdy9s_CZE",
-    category: "Modelo"
-  },
-  {
-    id: "9",
-    title: "Teste de Funcionamento",
-    youtubeId: "qlV2cH2BglA",
-    category: "Testes"
-  },
-  {
-    id: "10",
-    title: "Limpeza e Lubrificação",
-    youtubeId: "A2zfF7saiiM",
-    category: "Manutenção"
-  },
-  {
-    id: "11",
-    title: "Substituição de Peças",
-    youtubeId: "0FjkVPqaSkY",
-    category: "Reparo"
-  },
-  {
-    id: "12",
-    title: "Configuração Eletrônica",
-    youtubeId: "qZFHIlStzsA",
-    category: "Eletrônica"
-  },
-  {
-    id: "13",
-    title: "Instalação em Ônibus",
-    youtubeId: "f2MjRpxBCyM",
-    category: "Modelo"
-  },
-  {
-    id: "14",
-    title: "Programação Remota",
-    youtubeId: "hpSWbPrW6uQ",
-    category: "Eletrônica"
-  },
-  {
-    id: "15",
-    title: "Dicas de Profissional",
-    youtubeId: "7Wl5-prXHso",
-    category: "Dicas"
+    id: "v1",
+    title: "VÍDEO DEMONSTRATIVO – Automatizador de Porta",
+    youtubeId: "U7ooQjUCNn0",
+    category: "Instalação"
   }
 ];
 
-const categories = ["Todos", "Básico", "Avançado", "Segurança", "Manutenção", "Troubleshooting", "Modelo", "Testes", "Reparo", "Eletrônica", "Dicas"];
+const categories = ["Todos", "Instalação"];
 
 export default function InstallationVideos() {
   const [selectedCategory, setSelectedCategory] = React.useState("Todos");
@@ -124,7 +40,7 @@ export default function InstallationVideos() {
               Vídeos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-700">Instalação</span>
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Assista aos tutoriais completos e aprenda como instalar corretamente seu produto Inovari
+              Assista aos tutoriais completos e aprenda como instalar corretamente seu produto Automatiza
             </p>
           </div>
         </div>

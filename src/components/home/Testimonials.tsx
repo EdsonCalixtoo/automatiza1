@@ -60,7 +60,7 @@ export function Testimonials() {
             suas vans
           </h2>
           <p className="text-slate-400 text-lg">
-            Veja o que nossos clientes falam sobre o sistema de automação AutomatiZa
+            Veja o que nossos clientes falam sobre o sistema de automação Automatiza
           </p>
         </div>
 

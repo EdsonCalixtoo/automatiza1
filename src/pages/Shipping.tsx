@@ -150,7 +150,7 @@ export default function Shipping() {
             <div className="bg-yellow-50 p-6 rounded-xl border-l-4 border-yellow-500">
               <p className="text-yellow-900">
                 <span className="font-semibold">⚠️ Importante:</span> O prazo para a entrega varia de acordo com a forma de envio escolhida 
-                e localização de destino. A Inovari não é responsável por atrasos causados pelas transportadoras. Todos os prazos são estimados.
+                e localização de destino. A Automatiza não é responsável por atrasos causados pelas transportadoras. Todos os prazos são estimados.
               </p>
             </div>
           </div>

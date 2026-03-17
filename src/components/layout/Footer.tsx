@@ -122,7 +122,7 @@ export function Footer() {
             © 2026 Automatiza. Todos os direitos reservados.
           </p>
           <p className="text-gray-400 text-sm">
-            Inovação em automação de vans
+            Automatiza - Especialista em Automação de Vans
           </p>
         </div>
       </div>

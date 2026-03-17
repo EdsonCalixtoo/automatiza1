@@ -1,14 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/contexts/ProductContext";
 import { CATEGORY_LOGOS } from "@/data/brandLogos";
 import { Package, Zap, ShoppingCart, ChevronDown, Filter } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/utils";
 
 const Products = () => {
+  const [searchParams] = useSearchParams();
+  const vehicleParam = searchParams.get("vehicle");
   const { products } = useProducts();
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -17,6 +19,13 @@ const Products = () => {
   }>({});
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("all");
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (vehicleParam) {
+      setSelectedCategory(vehicleParam);
+      setExpandedCategory(vehicleParam);
+    }
+  }, [vehicleParam]);
 
   // Define categories and subcategories structure
   const categoryStructure: Record<string, { label: string; icon: string; subcategories: string[] }> = {

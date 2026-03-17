@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useState } from "react";
-import vehicleImage from "@/assets/OIG4.jpg";
+import vehicleImage from "/ftproduto.jpeg";
 import { BRAND_LOGOS } from "@/data/brandLogos";
 
 interface Vehicle {
@@ -80,9 +80,6 @@ const vehicles: Vehicle[] = [
 
 export function VehiclesCatalog() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(3);
-
-  const visibleVehicles = vehicles.slice(0, visibleCount);
 
   return (
     <section className="py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
@@ -107,7 +104,7 @@ export function VehiclesCatalog() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {visibleVehicles.map((vehicle) => (
+          {vehicles.map((vehicle) => (
             <div
               key={vehicle.id}
               onMouseEnter={() => setHoveredId(vehicle.id)}
@@ -160,12 +157,14 @@ export function VehiclesCatalog() {
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <Button 
-                    variant="default"
-                    className="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white group/btn rounded-xl font-semibold"
-                  >
-                    Ver Detalhes
-                  </Button>
+                  <a href={vehicle.link} className="flex-1">
+                    <Button 
+                      variant="default"
+                      className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white group/btn rounded-xl font-semibold"
+                    >
+                      Ver Detalhes
+                    </Button>
+                  </a>
                   <button className="p-3 rounded-xl border-2 border-gray-200 hover:bg-gray-50 hover:border-cyan-400 transition-all duration-300 flex items-center justify-center">
                     <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
                   </button>
@@ -177,19 +176,6 @@ export function VehiclesCatalog() {
             </div>
           ))}
         </div>
-
-        {/* Load More Button */}
-        {visibleCount < vehicles.length && (
-          <div className="mt-12 text-center">
-            <Button 
-              onClick={() => setVisibleCount(prev => prev + 3)}
-              size="lg"
-              className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-10 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Veja Mais Modelos
-            </Button>
-          </div>
-        )}
 
         {/* CTA */}
         <div className="mt-16 text-center">

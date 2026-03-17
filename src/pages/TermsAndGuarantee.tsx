@@ -184,7 +184,7 @@ export default function TermsAndGuarantee() {
                     Cobertura de Garantia
                   </h3>
                   <p className="leading-relaxed text-purple-900 mb-4">
-                    A Inovari Automações assegura a seus produtos, na forma da legislação vigente:
+                    A Automatiza assegura a seus produtos, na forma da legislação vigente:
                   </p>
                   <ul className="space-y-2">
                     {[
@@ -330,7 +330,7 @@ export default function TermsAndGuarantee() {
                     },
                     {
                       title: "Pronto!",
-                      desc: "Você adquiriu seu produto Inovari Automações! Aguarde a confirmação de pagamento e sua encomenda será enviada em até 5 dias úteis."
+                      desc: "Você adquiriu seu produto Automatiza! Aguarde a confirmação de pagamento e sua encomenda será enviada em até 5 dias úteis."
                     }
                   ].map((step, i) => (
                     <div key={i} className="flex gap-4 p-5 rounded-xl bg-white border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-300 group">

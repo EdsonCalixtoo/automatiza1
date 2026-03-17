@@ -140,7 +140,7 @@ export function Hero() {
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-xl">AutomatiZa Pro</p>
+                  <p className="text-white font-bold text-xl">Automatiza Pro</p>
                   <p className="text-cyan-400 text-sm mt-1">Porta Motorizada Inteligente</p>
                 </div>
               </div>

@@ -110,7 +110,7 @@ const Contact = () => {
                 </a>
 
                 <a 
-                  href="mailto:contato@inovar.com.br"
+                  href="mailto:contato@grupoautomatiza.com.br"
                   className="flex items-start gap-4 p-6 bg-card rounded-2xl shadow-card hover:shadow-lg transition-all duration-300 group border border-transparent hover:border-primary/20"
                 >
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
@@ -118,7 +118,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-heading font-semibold text-foreground text-lg">E-mail</h3>
-                    <p className="text-primary font-semibold">contato@inovar.com.br</p>
+                    <p className="text-primary font-semibold">contato@grupoautomatiza.com.br</p>
                     <p className="text-muted-foreground text-sm mt-1">Respondemos em até 24h</p>
                   </div>
                 </a>

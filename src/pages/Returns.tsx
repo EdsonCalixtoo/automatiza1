@@ -223,7 +223,7 @@ export default function Returns() {
                 Sua Satisfação é Nossa Prioridade
               </h3>
               <p className="text-amber-50 leading-relaxed">
-                Queremos que você fique 100% satisfeito com seus produtos Inovari. Se por algum motivo não estiver satisfeito, temos uma política flexível e sem complicações para trocas e devoluções dentro de 7 dias.
+                Queremos que você fique 100% satisfeito com seus produtos Automatiza. Se por algum motivo não estiver satisfeito, temos uma política flexível e sem complicações para trocas e devoluções dentro de 7 dias.
               </p>
             </div>
           </div>

@@ -18,7 +18,7 @@ export default function Warranty() {
               Termo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-purple-700">Garantia</span>
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Proteção total para seus produtos Inovari Automações
+              Proteção total para seus produtos Automatiza
             </p>
           </div>
         </div>

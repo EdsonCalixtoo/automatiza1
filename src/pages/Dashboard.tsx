@@ -34,6 +34,7 @@ import { SupabaseDiagnostic } from "@/components/SupabaseDiagnostic";
 import { SupabaseConnectionAlert } from "@/components/SupabaseConnectionAlert";
 import { getSellerForCategory } from "@/data/sellers";
 import { formatCurrency } from "@/lib/utils";
+import { CATEGORY_LABELS } from "@/data/categories";
 
 interface Order {
   id: string;
@@ -992,7 +993,9 @@ const Dashboard = () => {
                         </td>
                         <td className="px-4 py-4 text-gray-400">
                           <div className="flex flex-col">
-                            <span className="text-sm">{product.category}</span>
+                            <span className="text-sm font-semibold text-white">
+                              {CATEGORY_LABELS[product.category] || product.category}
+                            </span>
                             <span className="text-xs text-gray-500">
                               {product.subcategory}
                             </span>
@@ -1013,6 +1016,21 @@ const Dashboard = () => {
                           </span>
                         </td>
                         <td className="px-4 py-4 flex gap-2">
+                          <button
+                            onClick={() => {
+                              const { id, createdAt, ...rest } = (product as any);
+                              setEditingProduct({
+                                ...rest,
+                                name: `${product.name} (Cópia)`,
+                                status: "ativo",
+                              } as any);
+                              setShowProductForm(true);
+                            }}
+                            className="p-2 hover:bg-purple-500/20 rounded-lg transition-all border border-white/10 hover:border-purple-500/30"
+                            title="Duplicar produto"
+                          >
+                            <Copy className="w-5 h-5 text-purple-400" />
+                          </button>
                           <button
                             onClick={() => {
                               setEditingProduct(product as any);

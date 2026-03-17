@@ -7,31 +7,11 @@ import { useProducts, type Product } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
 
-const CATEGORIES = {
-  "Portas Automáticas": [
-    "Citroen - Jumper", 
-    "Citroen - Jumpy", 
-    "Fiat - Ducato", 
-    "Fiat Scudo", 
-    "Ford - Transit", 
-    "Iveco - Daily", 
-    "Kia - Besta", 
-    "Mercedes - Sprinter", 
-    "Peugeot - Boxer", 
-    "Peugeot Expert", 
-    "Renault - Master", 
-    "Volkswagen - Kombi"
-  ],
-  "Kits Completos": ["Motor com Sensor", "Motor Simples", "Kit Premium"],
-  "Peças Individuais": ["Motores", "Sensores", "Cabos", "Conectores", "Cremalheira", "Ímã"],
-  "Cremalheira": ["Aço", "Aço Inox", "Nylon"],
-  "Acessórios": ["Capa de Proteção", "Filtro de Ar", "Bateria", "Ímã"],
-  "Manutenção": ["Óleo", "Limpador", "Graxa", "Filtro"],
-};
+import { CATEGORIES, CATEGORY_LABELS } from "@/data/categories";
 
 interface ProductFormProps {
   onClose: () => void;
-  product?: Product;
+  product?: any;
 }
 
 export function ProductForm({ onClose, product }: ProductFormProps) {
@@ -260,7 +240,7 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
       features: features.filter(f => f.trim() !== ""),
     };
 
-    if (product) {
+    if (product && product.id) {
       updateProduct(product.id, dataToSave);
     } else {
       addProduct(dataToSave);
@@ -275,9 +255,9 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
         <div className="sticky top-0 bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-6 flex items-center justify-between border-b border-white/10">
           <div>
             <h2 className="text-3xl font-black flex items-center gap-2">
-              {product ? "Editar Produto" : "Novo Produto"}
+              {product && product.id ? "Editar Produto" : product ? "Duplicar Produto" : "Novo Produto"}
             </h2>
-            {product && (
+            {product && product.id && (
               <p className="text-cyan-100 text-sm mt-1">ID: {product.id}</p>
             )}
           </div>
@@ -447,18 +427,24 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
                     value={formData.category}
                     onChange={(e) => {
                       const newCategory = e.target.value;
-                      const subcategories = CATEGORIES[newCategory as keyof typeof CATEGORIES];
+                      const subcategories = CATEGORIES[newCategory as keyof typeof CATEGORIES] || [];
                       setFormData({
                         ...formData,
                         category: newCategory,
-                        subcategory: subcategories[0],
+                        subcategory: subcategories[0] || "",
                       });
                     }}
                     className="w-full bg-white/10 border-2 border-cyan-500/30 text-white rounded-xl p-3 font-semibold hover:border-cyan-500/60 transition-all"
                   >
+                    {/* Incluir a categoria atual mesmo que não esteja na lista padrão para evitar erro */}
+                    {!Object.keys(CATEGORIES).includes(formData.category) && formData.category && (
+                      <option value={formData.category} className="bg-slate-900 italic">
+                        {formData.category} (Personalizada)
+                      </option>
+                    )}
                     {Object.keys(CATEGORIES).map((cat) => (
                       <option key={cat} value={cat} className="bg-slate-900">
-                        {cat}
+                        {CATEGORY_LABELS[cat] || cat}
                       </option>
                     ))}
                   </select>
@@ -473,9 +459,9 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
                     }
                     className="w-full bg-white/10 border-2 border-cyan-500/30 text-white rounded-xl p-3 font-semibold hover:border-cyan-500/60 transition-all"
                   >
-                    {CATEGORIES[
+                    {(CATEGORIES[
                       formData.category as keyof typeof CATEGORIES
-                    ].map((sub) => (
+                    ] || []).map((sub) => (
                       <option key={sub} value={sub} className="bg-slate-900">
                         {sub}
                       </option>
@@ -1045,7 +1031,7 @@ export function ProductForm({ onClose, product }: ProductFormProps) {
               className="flex-1 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:via-emerald-600 hover:to-green-700 text-white font-black py-4 px-6 rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 text-lg uppercase tracking-widest relative overflow-hidden group"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {product ? "🔄 Atualizar" : "✨ Criar"} Produto
+                {product && product.id ? "🔄 Atualizar" : "✨ Criar"} Produto
               </span>
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>

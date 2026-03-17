@@ -152,14 +152,13 @@ export function ReplacementParts() {
               </Button>
             </div>
 
-            {/* Visual */}
             <div className="hidden md:flex items-center justify-center">
               <div className="relative w-full max-w-sm aspect-square flex items-center justify-center">
-                <div className="absolute inset-0 bg-white/10 rounded-2xl border-2 border-white/20" />
-                <div className="relative z-10 text-center">
-                  <Package className="w-32 h-32 text-white/30 mx-auto mb-4" />
-                  <p className="text-white/60 text-sm">Imagem do kit de peças</p>
-                </div>
+                <img 
+                  src="/ftproduto.jpeg" 
+                  alt="Kit Completo de Reposição" 
+                  className="w-full h-full object-cover rounded-2xl shadow-2xl border-2 border-white/20"
+                />
               </div>
             </div>
           </div>

@@ -37,7 +37,7 @@ export default function HowToBuy() {
                     Comprar em nossa loja é muito fácil!
                   </h2>
                   <p className="text-cyan-900 leading-relaxed">
-                    Desenvolvemos um processo de compra intuitivo e seguro para sua comodidade. Siga os 6 passos abaixo e seus produtos Inovari chegarão em breve.
+                    Desenvolvemos um processo de compra intuitivo e seguro para sua comodidade. Siga os 6 passos abaixo e seus produtos Automatiza chegarão em breve.
                   </p>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function HowToBuy() {
                   step: 6,
                   icon: CheckCircle,
                   title: "Pronto!",
-                  desc: "Você adquiriu seu produto Inovari Automações! Você receberá um email de confirmação com o número do pedido. Aguarde a confirmação de pagamento e sua encomenda será enviada em até 5 dias úteis.",
+                  desc: "Você adquiriu seu produto Automatiza! Você receberá um email de confirmação com o número do pedido. Aguarde a confirmação de pagamento e sua encomenda será enviada em até 5 dias úteis.",
                   color: "from-cyan-600 to-cyan-700"
                 }
               ].map((item) => {
