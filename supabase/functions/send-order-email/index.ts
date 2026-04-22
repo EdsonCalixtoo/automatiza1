@@ -22,7 +22,7 @@ serve(async (req: Request) => {
         const resend = new Resend(resendApiKey)
         const { order, type, lang = 'pt' } = await req.json()
 
-        const t = {
+        const allLocales: any = {
             pt: {
                 currency: "R$",
                 qty: "Qtd",
@@ -95,7 +95,9 @@ serve(async (req: Request) => {
                 admin_total: "VALOR TOTAL",
                 admin_dashboard: "Ver Dashboard"
             }
-        }[lang as 'pt' | 'en' | 'es'] || t.pt;
+        };
+
+        const t = allLocales[lang as 'pt' | 'en' | 'es'] || allLocales.pt;
 
         // Configuração OFICIAL de domínios
         const siteUrl = "https://grupoautomatiza.com.br";

@@ -26,12 +26,14 @@
   },
   "products": {
     "full_catalog": "Catálogo Completo",
-    "subtitle": "Descubra nuestra línea completa de kits de automatización y componentes de calidad premium",
+    "subtitle": "Encuentre las mejores soluciones en automatizadores y accesorios",
     "filter_by": "Filtrar por Vehículo",
     "filters": "Filtros",
-    "all_products": "Todos los Productos",
+    "all_products": "Todos os Productos",
     "showing": "Mostrando",
-    "no_products": "No se encontraron productos en esta categoría"
+    "automatic_doors": "Puertas Automáticas",
+    "no_products": "No se encontraron productos en esta categoría",
+    "save": "AHORRE"
   },
   "checkout": {
     "title": "Finalizar Compra",
@@ -641,17 +643,7 @@
     "purchase_title": "Cómo Comprar",
     "purchase_intro": "✨ ¡Comprar en nuestra tienda es muy fácil! Siga los pasos a continuación:"
   },
-  "products": {
-    "full_catalog": "Catálogo Completo",
-    "subtitle": "Encuentre las mejores soluciones en automatizadores y accesorios",
-    "filter_by": "Filtrar por",
-    "filters": "Filtros",
-    "all_products": "Todos los Productos",
-    "showing": "Mostrando",
-    "automatic_doors": "Puertas Automáticas",
-    "no_products": "No se encontraron productos en esta categoría",
-    "save": "AHORRE"
-  },
+
   "categories": {
     "jumper": "Citroen - Jumper",
     "jumpy": "Citroen - Jumpy",
@@ -805,10 +797,10 @@
     "nfe_title": "Factura Electrónica",
     "nfe_desc": "Documento completo con todos los valores e impuestos.",
     "receipt_title": "Recibo de Pedido",
-    "receipt_desc": "Lista simples de productos y cantidades del pedido.",
+    "receipt_desc": "Lista simple de productos y cantidades del pedido.",
     "modal_footer": "El documento se abrirá en una nueva pestaña para su visualización o impresión",
     "status_waiting": "Esperando Pago",
-    "status_paid": "Pago Aprovado",
+    "status_paid": "Pago Aprobado",
     "status_shipped": "Producto Enviado",
     "status_delivered": "Entregado",
     "status_canceled": "Cancelado",

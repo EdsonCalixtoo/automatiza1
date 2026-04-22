@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Package, User, LogOut, Eye, Download } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
@@ -64,6 +64,9 @@ export default function CustomerArea() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
   const [isEditing, setIsEditing] = useState(false);
   

@@ -26,12 +26,14 @@
   },
   "products": {
     "full_catalog": "Full Catalog",
-    "subtitle": "Discover our complete line of automation kits and premium quality components",
+    "subtitle": "Find the best solutions in automators and accessories",
     "filter_by": "Filter by Vehicle",
     "filters": "Filters",
     "all_products": "All Products",
     "showing": "Showing",
-    "no_products": "No products found in this category"
+    "automatic_doors": "Automatic Doors",
+    "no_products": "No products found in this category",
+    "save": "SAVE"
   },
   "checkout": {
     "title": "Checkout",
@@ -641,17 +643,7 @@
     "purchase_title": "How to Buy",
     "purchase_intro": "✨ Buying in our store is very easy! Follow the steps below:"
   },
-  "products": {
-    "full_catalog": "Full Catalog",
-    "subtitle": "Find the best solutions in automators and accessories",
-    "filter_by": "Filter by",
-    "filters": "Filters",
-    "all_products": "All Products",
-    "showing": "Showing",
-    "automatic_doors": "Automatic Doors",
-    "no_products": "No products found in this category",
-    "save": "SAVE"
-  },
+
   "categories": {
     "jumper": "Citroen - Jumper",
     "jumpy": "Citroen - Jumpy",
