@@ -52,6 +52,14 @@ const LanguageWrapper = () => {
   return <Outlet />;
 };
 
+const RootRedirect = () => {
+  const { i18n } = useTranslation();
+  const detectedLang = i18n.language?.split('-')[0] || 'pt';
+  const finalLang = ['pt', 'en', 'es'].includes(detectedLang) ? detectedLang : 'pt';
+  
+  return <Navigate to={`/${finalLang}`} replace />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -100,7 +108,7 @@ const App = () => (
                     <Route path="videos-instalacao" element={<InstallationVideos />} />
                     <Route path="termos-garantia" element={<TermsAndGuarantee />} />
                   </Route>
-                  <Route path="/" element={<Navigate to="/pt" replace />} />
+                  <Route path="/" element={<RootRedirect />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
