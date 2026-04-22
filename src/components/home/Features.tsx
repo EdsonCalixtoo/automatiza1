@@ -1,50 +1,51 @@
 import { Zap, Shield, Wrench, Clock, Settings, Award } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const features = [
+const getFeatures = (t: any) => [
   {
     icon: Zap,
-    title: "Abertura Ultra-Rápida",
-    description: "Sistema inteligente que abre e fecha a porta em apenas 3-4 segundos com precisão absoluta.",
+    title: t("features.items.speed.title"),
+    description: t("features.items.speed.description"),
     gradient: "from-yellow-500 to-orange-500",
     glow: "shadow-yellow-500/20",
     bg: "from-yellow-500/10 to-orange-500/5",
   },
   {
     icon: Shield,
-    title: "Segurança Total",
-    description: "Sensor anti-esmagamento que detecta obstáculos e reverte automaticamente para evitar acidentes.",
+    title: t("features.items.safety.title"),
+    description: t("features.items.safety.description"),
     gradient: "from-cyan-500 to-blue-500",
     glow: "shadow-cyan-500/20",
     bg: "from-cyan-500/10 to-blue-500/5",
   },
   {
     icon: Wrench,
-    title: "Instalação Fácil",
-    description: "Instalação profissional sem modificações estruturais. Equipe especializada em todo Brasil.",
+    title: t("features.items.installation.title"),
+    description: t("features.items.installation.description"),
     gradient: "from-violet-500 to-purple-500",
     glow: "shadow-violet-500/20",
     bg: "from-violet-500/10 to-purple-500/5",
   },
   {
     icon: Clock,
-    title: "Alta Durabilidade",
-    description: "Componentes industriais de alta qualidade projetados para uso intensivo diário, por anos.",
+    title: t("features.items.durability.title"),
+    description: t("features.items.durability.description"),
     gradient: "from-green-500 to-emerald-500",
     glow: "shadow-green-500/20",
     bg: "from-green-500/10 to-emerald-500/5",
   },
   {
     icon: Settings,
-    title: "Compatibilidade",
-    description: "Funciona com a grande maioria das vans do mercado brasileiro: Sprinter, Master, Transit e mais.",
+    title: t("features.items.compatibility.title"),
+    description: t("features.items.compatibility.description"),
     gradient: "from-pink-500 to-rose-500",
     glow: "shadow-pink-500/20",
     bg: "from-pink-500/10 to-rose-500/5",
   },
   {
     icon: Award,
-    title: "Garantia 12 Meses",
-    description: "Cobertura total por 12 meses com suporte técnico especializado via WhatsApp todos os dias.",
+    title: t("features.items.warranty.title"),
+    description: t("features.items.warranty.description"),
     gradient: "from-amber-500 to-yellow-500",
     glow: "shadow-amber-500/20",
     bg: "from-amber-500/10 to-yellow-500/5",
@@ -52,6 +53,8 @@ const features = [
 ];
 
 export function Features() {
+  const { t } = useTranslation();
+  const features = getFeatures(t);
   return (
     <section className="py-28 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
       {/* Background */}
@@ -72,16 +75,16 @@ export function Features() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-4 py-2 rounded-full mb-6">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-cyan-400 font-semibold text-sm tracking-wide uppercase">Benefícios Exclusivos</span>
+            <span className="text-cyan-400 font-semibold text-sm tracking-wide uppercase">{t("features.badge")}</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-            Por que escolher nosso{" "}
+            {t("features.title_part1")}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-              sistema de automação?
+              {t("features.title_part2")}
             </span>
           </h2>
           <p className="text-slate-400 text-lg leading-relaxed">
-            Desenvolvemos um equipamento que agrega valor ao sua van e reduz o desgaste ao longo do tempo.
+            {t("features.subtitle")}
           </p>
         </div>
 

@@ -1,15 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowRight, Shield, Zap, Award, Star, ChevronRight, Sparkles } from "lucide-react";
 import { BrandSelector } from "./BrandSelector";
+import { useTranslation } from "react-i18next";
 
-const stats = [
-  { icon: Shield, value: "12", label: "Meses de Garantia", suffix: "" },
-  { icon: Zap, value: "3-4", label: "Seg. de Abertura", suffix: "s" },
-  { icon: Award, value: "500", label: "Vans Automatizadas", suffix: "+" },
-  { icon: Star, value: "4.9", label: "Avaliação Média", suffix: "★" },
+const getStats = (t: any) => [
+  { icon: Shield, value: "12", label: t("hero.warranty"), suffix: "" },
+  { icon: Zap, value: "3-4", label: t("hero.opening"), suffix: "s" },
+  { icon: Award, value: "500", label: t("hero.automated_vans"), suffix: "+" },
+  { icon: Star, value: "4.9", label: t("hero.rating"), suffix: "★" },
 ];
 
 export function Hero() {
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950">
       {/* Animated grid background */}
@@ -53,7 +58,7 @@ export function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500" />
               </span>
-              <span className="text-cyan-300 text-sm font-semibold tracking-wide">Tecnologia de Automação Premium</span>
+              <span className="text-cyan-300 text-sm font-semibold tracking-wide">{t("hero.badge")}</span>
               <ChevronRight className="w-4 h-4 text-cyan-500 group-hover:translate-x-1 transition-transform" />
             </div>
 
@@ -63,7 +68,7 @@ export function Hero() {
                 <div className="h-px bg-amber-500/50 flex-1 max-w-[80px]" />
                 <span className="text-amber-500 font-black tracking-widest text-lg uppercase flex items-center gap-2">
                   <Star className="w-5 h-5 fill-amber-500" />
-                  Especial de Aniversário
+                  {t("hero.anniversary")}
                   <Star className="w-5 h-5 fill-amber-500" />
                 </span>
                 <div className="h-px bg-amber-500/50 flex-1 max-w-[80px]" />
@@ -71,7 +76,7 @@ export function Hero() {
 
               <h1 className="font-heading text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] text-white">
                 <span className="text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 uppercase tracking-tighter">
-                  10 ANOS
+                  {t("hero.years")}
                 </span>
                 <br />
                 <span className="relative inline-block mt-1 sm:mt-2">
@@ -88,14 +93,14 @@ export function Hero() {
                   <div className="bg-amber-500/20 border-2 border-amber-500 rounded-2xl py-2 px-4 mb-3 sm:mb-4 animate-[pulse_2s_ease-in-out_infinite]">
                     <p className="text-amber-400 font-black text-xs sm:text-base uppercase tracking-widest flex items-center justify-center gap-2">
                       <Sparkles className="w-3 h-3 sm:w-5 sm:h-5 flex-shrink-0" /> 
-                      USE O CUPOM: 10ANOSAUTOMATIZA
+                      {t("hero.coupon")}
                       <Sparkles className="w-3 h-3 sm:w-5 sm:h-5 flex-shrink-0" />
                     </p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-white text-lg sm:text-2xl font-bold">De</span>
+                      <span className="text-white text-lg sm:text-2xl font-bold">{t("hero.from")}</span>
                       <span className="line-through text-slate-500 text-xl sm:text-2xl font-bold">R$ 1.680</span>
                     </div>
                     <span className="text-5xl sm:text-6xl font-black text-amber-400">R$ 1.450</span>
@@ -103,16 +108,16 @@ export function Hero() {
 
                   <div className="mt-4 flex flex-col items-center">
                     <div className="flex flex-wrap justify-center items-center gap-2 mb-2">
-                      <span className="bg-green-500 text-white rounded-full px-3 py-0.5 text-[10px] font-bold">FRETE GRÁTIS</span>
-                      <span className="text-white text-sm sm:text-xl font-bold">10x SEM JUROS</span>
+                      <span className="bg-green-500 text-white rounded-full px-3 py-0.5 text-[10px] font-bold">{t("hero.free_shipping")}</span>
+                      <span className="text-white text-sm sm:text-xl font-bold">{t("hero.installments")}</span>
                     </div>
-                    <p className="text-slate-400 text-xs sm:text-sm font-semibold">de R$ 145,00 /mês</p>
+                    <p className="text-slate-400 text-xs sm:text-sm font-semibold">{t("hero.per_month")}</p>
                   </div>
                 </div>
               </div>
 
               <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed pt-4 font-medium italic">
-                "Há uma década abrindo caminhos e transformando o transporte alternativo no Brasil com tecnologia premium."
+                {t("hero.quote")}
               </p>
             </div>
 
@@ -123,11 +128,11 @@ export function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <Link to="/produtos">
+              <Link to={toL("/produtos")}>
                 <button className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-105">
                   <span className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600" />
                   <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative text-white">Ver Todos os Produtos</span>
+                  <span className="relative text-white">{t("hero.view_products")}</span>
                   <ArrowRight className="relative w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
                   <span className="absolute inset-0 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.5)] opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -135,7 +140,7 @@ export function Hero() {
 
               <a href="https://wa.me/5519989429972" target="_blank" rel="noopener noreferrer">
                 <button className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl font-bold text-lg border border-slate-600 text-slate-300 hover:border-cyan-500/50 hover:text-cyan-300 hover:bg-white/5 transition-all duration-300 hover:scale-105">
-                  💬 Suporte WhatsApp
+                  💬 {t("hero.support")}
                 </button>
               </a>
             </div>
@@ -144,7 +149,7 @@ export function Hero() {
 
         {/* STATS BAR */}
         <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, i) => {
+          {getStats(t).map((stat, i) => {
             const Icon = stat.icon;
             return (
               <div
@@ -174,7 +179,7 @@ export function Hero() {
         <div className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center pt-2">
           <div className="w-1 h-2 bg-slate-400 rounded-full animate-bounce" />
         </div>
-        <span className="text-slate-500 text-xs">Role para baixo</span>
+        <span className="text-slate-500 text-xs">{t("hero.scroll")}</span>
       </div>
 
       <style>{`

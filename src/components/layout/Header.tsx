@@ -6,30 +6,38 @@ import { CartIcon } from "@/components/CartIcon";
 import { AuthButton } from "@/components/AuthButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useParams } from "react-router-dom";
 
 const ADMIN_EMAIL = "gugaeduardo30@gmail.com";
 
-const navLinks = [
-  { href: "/", label: "Início" },
-  { href: "/produtos", label: "Produtos" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/contato", label: "Contato" },
+const getNavLinks = (t: any, toL: any) => [
+  { href: toL("/"), label: t("header.home"), original: "/" },
+  { href: toL("/produtos"), label: t("header.products"), original: "/produtos" },
+  { href: toL("/sobre"), label: t("header.about"), original: "/sobre" },
+  { href: toL("/contato"), label: t("header.contact"), original: "/contato" },
 ];
 
-const infoLinks = [
-  { href: "/seguranca", label: "Segurança", icon: Shield },
-  { href: "/envio", label: "Envio", icon: Truck },
-  { href: "/garantia", label: "Garantia", icon: Award },
-  { href: "/como-comprar", label: "Como Comprar", icon: ShoppingCart },
-  { href: "/trocas-devolucoes", label: "Trocas e Devoluções", icon: RefreshCw },
-  { href: "/videos-instalacao", label: "Vídeos de Instalação", icon: Play },
+const getInfoLinks = (t: any, toL: any) => [
+  { href: toL("/seguranca"), label: t("info.security"), icon: Shield },
+  { href: toL("/envio"), label: t("info.shipping"), icon: Truck },
+  { href: toL("/garantia"), label: t("info.warranty"), icon: Award },
+  { href: toL("/como-comprar"), label: t("info.how_to_buy"), icon: ShoppingCart },
+  { href: toL("/trocas-devolucoes"), label: t("info.returns"), icon: RefreshCw },
+  { href: toL("/videos-instalacao"), label: t("info.installation_videos"), icon: Play },
 ];
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const { user } = useAuth();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -68,7 +76,7 @@ export function Header() {
           <div className="px-4">
             <div className="flex items-center justify-between h-20 gap-8">
             {/* Logo */}
-            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity group">
+            <Link to={toL("/")} className="flex items-center hover:opacity-80 transition-opacity group">
               <div className="relative">
                 <img 
                   src="/logonovo.jpeg" 
@@ -80,13 +88,13 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
+              {getNavLinks(t, toL).map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
                   className={cn(
                     "px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm",
-                    location.pathname === link.href
+                    location.pathname === link.href || (link.original === "/" && location.pathname === `/${currentLang}`)
                       ? "text-cyan-600 bg-cyan-50 border border-cyan-200"
                       : "text-gray-700 hover:text-cyan-600 hover:bg-cyan-50/50"
                   )}
@@ -98,11 +106,11 @@ export function Header() {
               {/* Info Dropdown */}
               <div className="relative group ml-1">
                 <button className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:text-cyan-600 hover:bg-cyan-50/50 transition-all duration-300 flex items-center gap-1 text-sm">
-                  Informações
+                  {t("header.info")}
                   <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
                 <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur border border-cyan-100/30 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-1 z-50">
-                  {infoLinks.map((link) => {
+                  {getInfoLinks(t, toL).map((link) => {
                     const Icon = link.icon;
                     return (
                       <Link
@@ -121,6 +129,7 @@ export function Header() {
 
             {/* CTA Button */}
             <div className="hidden lg:flex items-center gap-3">
+              <LanguageSwitcher />
               <CartIcon />
               <AuthButton />
               <a 
@@ -133,13 +142,14 @@ export function Header() {
                   className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white gap-2 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 px-6"
                 >
                   <Zap className="w-4 h-4" />
-                  Fale Conosco
+                  {t("header.fale_conosco")}
                 </Button>
               </a>
             </div>
 
             {/* Mobile Actions */}
-            <div className="lg:hidden flex items-center gap-4">
+            <div className="lg:hidden flex items-center gap-2">
+              <LanguageSwitcher />
               <CartIcon />
               <button
                 className="p-2.5 rounded-xl bg-cyan-600 text-white shadow-lg shadow-cyan-600/20 active:scale-95 transition-all"
@@ -171,15 +181,15 @@ export function Header() {
             <div className="flex flex-col h-full overflow-y-auto custom-scrollbar">
               <nav className="flex flex-col gap-3">
                 <p className="text-cyan-600 text-[11px] font-black uppercase tracking-[0.4em] mb-6 px-4 opacity-70">
-                  Menu Principal
+                  {t("header.main_menu")}
                 </p>
-                {navLinks.map((link) => (
+                {getNavLinks(t, toL).map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
                     className={cn(
                       "px-5 py-5 rounded-[2rem] font-black text-2xl transition-all duration-300 flex items-center justify-between group",
-                      location.pathname === link.href
+                      location.pathname === link.href || (link.original === "/" && location.pathname === `/${currentLang}`)
                         ? "bg-gradient-to-r from-cyan-600/10 to-transparent text-cyan-600 border-l-4 border-cyan-500"
                         : "text-slate-600 hover:text-cyan-600 hover:translate-x-2"
                     )}
@@ -198,14 +208,14 @@ export function Header() {
                   >
                     <span className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-cyan-600" />
-                      Informações
+                      {t("header.info")}
                     </span>
                     <ChevronDown className={cn("w-6 h-6 transition-transform duration-500", isInfoOpen && "rotate-180")} />
                   </button>
                   
                   {isInfoOpen && (
                     <div className="mt-4 grid grid-cols-1 gap-3 animate-in slide-in-from-top-4 duration-500">
-                      {infoLinks.map((link) => {
+                      {getInfoLinks(t, toL).map((link) => {
                         const Icon = link.icon;
                         return (
                           <Link
@@ -239,12 +249,12 @@ export function Header() {
                     className="w-full h-20 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white gap-4 font-black rounded-3xl shadow-xl text-xl uppercase tracking-widest transition-all active:scale-[0.98]"
                   >
                     <Zap className="w-6 h-6 animate-pulse" />
-                    ATENDIMENTO VIP
+                    {t("header.atendimento_vip")}
                   </Button>
                 </a>
 
                 <Link
-                  to="/minha-conta"
+                  to={toL("/minha-conta")}
                   className="block"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -253,18 +263,18 @@ export function Header() {
                     variant="outline"
                     className="w-full h-18 border-cyan-100 bg-white text-slate-700 hover:bg-slate-50 font-black rounded-3xl text-lg uppercase tracking-tighter"
                   >
-                    👤 Minha Conta
+                    👤 {t("header.minha_conta")}
                   </Button>
                 </Link>
 
                 {user && user.email === ADMIN_EMAIL && (
                   <Link
-                    to="/admin/dashboard"
+                    to={toL("/admin/dashboard")}
                     className="block opacity-60 hover:opacity-100 transition-opacity"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <div className="text-center py-2 text-xs font-bold text-slate-400 tracking-[0.2em] uppercase">
-                      Painel Administrador
+                      {t("header.admin_panel")}
                     </div>
                   </Link>
                 )}

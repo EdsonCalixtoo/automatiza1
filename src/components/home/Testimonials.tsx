@@ -1,42 +1,46 @@
 import { Star, Quote } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const testimonials = [
+const getTestimonials = (t: any) => [
   {
-    name: "João Silva",
-    role: "Proprietário",
-    company: "Transportes Silva",
-    message: "Melhor investimento que fiz! Meus passageiros adoraram. Agora não preciso mais ficar abrindo a porta manualmente. O sistema é muito confiável.",
+    name: t("testimonials.items.joao.name"),
+    role: t("testimonials.items.joao.role"),
+    company: t("testimonials.items.joao.company"),
+    message: t("testimonials.items.joao.message"),
     rating: 5,
     avatar: "J",
     color: "from-cyan-500 to-blue-600",
   },
   {
-    name: "Maria Santos",
-    role: "Gerente Operacional",
-    company: "Frota Premium",
-    message: "Sistema confiável, instalação rápida e o suporte é excelente. Recomendo para qualquer empresa que queira modernizar sua frota!",
+    name: t("testimonials.items.maria.name"),
+    role: t("testimonials.items.maria.role"),
+    company: t("testimonials.items.maria.company"),
+    message: t("testimonials.items.maria.message"),
     rating: 5,
     avatar: "M",
     color: "from-violet-500 to-purple-600",
   },
   {
-    name: "Carlos Oliveira",
-    role: "Motorista Autônomo",
-    company: "Transportes Inteligentes",
-    message: "Muito prático! Ganho muito tempo com essa automação. A qualidade é muito boa e o preço vale cada centavo. Já indiquei para vários amigos.",
+    name: t("testimonials.items.carlos.name"),
+    role: t("testimonials.items.carlos.role"),
+    company: t("testimonials.items.carlos.company"),
+    message: t("testimonials.items.carlos.message"),
     rating: 5,
     avatar: "C",
     color: "from-green-500 to-emerald-600",
   },
 ];
 
-const stats = [
-  { value: "500+", label: "Clientes Satisfeitos" },
-  { value: "1.000+", label: "Vans Automatizadas" },
-  { value: "99.8%", label: "Taxa de Satisfação" },
+const getStats = (t: any) => [
+  { value: "500+", label: t("testimonials.stats.clients") },
+  { value: "1.000+", label: t("testimonials.stats.automated") },
+  { value: "99.8%", label: t("testimonials.stats.satisfaction") },
 ];
 
 export function Testimonials() {
+  const { t } = useTranslation();
+  const testimonials = getTestimonials(t);
+  const stats = getStats(t);
   return (
     <section className="py-28 bg-gradient-to-b from-slate-900 to-slate-950 relative overflow-hidden">
       {/* Background */}
@@ -50,17 +54,17 @@ export function Testimonials() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-full mb-6">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-yellow-400 font-semibold text-sm">+500 Avaliações 5 estrelas</span>
+            <span className="text-yellow-400 font-semibold text-sm">{t("testimonials.badge")}</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-            Clientes que{" "}
+            {t("testimonials.title_part1")}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
-              já transformaram
+              {t("testimonials.title_part2")}
             </span>{" "}
-            suas vans
+            {t("testimonials.title_part3")}
           </h2>
           <p className="text-slate-400 text-lg">
-            Veja o que nossos clientes falam sobre o sistema de automação Automatiza
+            {t("testimonials.subtitle")}
           </p>
         </div>
 

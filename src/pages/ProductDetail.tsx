@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/contexts/ProductContext";
@@ -9,6 +10,11 @@ import { formatCurrency } from "@/lib/utils";
 import { CartNotification } from "@/components/cart/CartNotification";
 
 const ProductDetail = () => {
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+
   const { id } = useParams<{ id: string }>();
   const { products, loading } = useProducts();
   
@@ -54,7 +60,7 @@ const ProductDetail = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-20 text-center">
-          <p className="text-lg text-gray-600">Carregando produto...</p>
+          <p className="text-lg text-gray-600">{t("product_detail.loading")}</p>
         </div>
       </Layout>
     );
@@ -64,13 +70,13 @@ const ProductDetail = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="font-heading text-3xl font-bold mb-4">Produto não encontrado</h1>
-          <p className="text-gray-600 mb-6">ID procurado: {id}</p>
-          <p className="text-gray-500 mb-6 text-sm">Produtos disponíveis: {products.length}</p>
-          <Link to="/produtos">
+          <h1 className="font-heading text-3xl font-bold mb-4">{t("product_detail.product_not_found")}</h1>
+          <p className="text-gray-600 mb-6">{t("product_detail.id_searched")}: {id}</p>
+          <p className="text-gray-500 mb-6 text-sm">{t("product_detail.available_products")}: {products.length}</p>
+          <Link to={toL("/produtos")}>
             <Button variant="default">
               <ArrowLeft className="w-4 h-4" />
-              Voltar para Produtos
+              {t("product_detail.back_to_products")}
             </Button>
           </Link>
         </div>
@@ -88,9 +94,9 @@ const ProductDetail = () => {
         <div className="absolute bottom-0 left-0 w-40 h-40 md:w-96 md:h-96 bg-white/5 rounded-full blur-3xl" />
         
         <div className="container mx-auto px-4 relative z-10">
-          <Link to="/produtos" className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 md:mb-6 text-sm md:text-base">
+          <Link to={toL("/produtos")} className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 md:mb-6 text-sm md:text-base">
             <ArrowLeft className="w-4 h-4" />
-            <span>Voltar para Produtos</span>
+            <span>{t("product_detail.back_to_products")}</span>
           </Link>
         </div>
       </div>
@@ -111,7 +117,7 @@ const ProductDetail = () => {
                     </span>
                   )}
                   <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-amber-950 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-black uppercase tracking-tighter shadow-xl flex items-center gap-1.5 border-2 border-amber-400/50">
-                    <Star className="w-4 h-4 md:w-5 md:h-5 fill-amber-950" /> 10 ANOS DE TRADIÇÃO
+                    <Star className="w-4 h-4 md:w-5 md:h-5 fill-amber-950" /> {t("hero.years")} {t("product_detail.tradition")}
                   </span>
                 </div>
                 
@@ -199,7 +205,7 @@ const ProductDetail = () => {
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 md:py-4 rounded-full font-bold flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transition-all group text-sm md:text-base cursor-pointer"
                 >
                   <Video className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
-                  Ver Vídeo do Produto
+                  {t("product_detail.view_video")}
                 </button>
               )}
             </div>
@@ -210,8 +216,8 @@ const ProductDetail = () => {
               <div>
                 <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
                   <span className="inline-flex items-center gap-1 md:gap-2 bg-cyan-100 text-cyan-700 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs font-bold uppercase tracking-wider">
-                    {product.category === "completo" ? "🏆 Kit Completo" : 
-                     product.category === "simples" ? "⚡ Kit Simples" : "🔧 Acessório"}
+                    {product.category === "completo" ? `🏆 ${t("products.full_catalog")}` : 
+                     product.category === "simples" ? `⚡ ${t("home.featured_kits_title").split(" ")[1]}` : `🔧 ${t("product_detail.accessory")}`}
                   </span>
                   {product.subcategory && (
                     <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-xs font-semibold">
@@ -233,7 +239,7 @@ const ProductDetail = () => {
                   <div className="flex flex-col gap-1">
                     <span className="text-cyan-600 font-black text-[10px] md:text-xs uppercase tracking-[0.3em] flex items-center gap-2">
                       <PartyPopper className="w-4 h-4" /> 
-                      Oferta Festiva de 10 Anos
+                      {t("product_detail.festive_offer")}
                     </span>
                     <div className="flex items-end gap-3">
                       {(product.originalPrice ?? 0) > 0 && (
@@ -249,27 +255,27 @@ const ProductDetail = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                     <div className="bg-cyan-50/50 border border-cyan-100 rounded-2xl p-4 transition-all hover:bg-cyan-100/50">
-                      <p className="text-cyan-700 text-[10px] font-bold uppercase mb-1">Pagamento Parcelado</p>
+                      <p className="text-cyan-700 text-[10px] font-bold uppercase mb-1">{t("checkout.payment_method")}</p>
                       <p className="text-gray-900 font-bold text-sm md:text-base">
-                        Até <span className="text-cyan-600 text-lg md:text-xl">10x Sem Juros</span>
+                        {t("product_detail.installments")}
                       </p>
-                      <p className="text-slate-500 text-[10px]">de {formatCurrency(product.price / 10)} / mês</p>
+                      <p className="text-slate-500 text-[10px]">de {formatCurrency(product.price / 10)} / {t("product_detail.installment_month")}</p>
                     </div>
 
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 transition-all hover:bg-amber-100/50">
                       <p className="text-amber-600 text-[10px] font-bold uppercase mb-1">Cupom Especial</p>
                       <p className="text-amber-900 font-black text-sm md:text-lg tracking-tighter">10ANOSAUTOMATIZA</p>
-                      <p className="text-amber-700/80 text-[10px]">Aplique no checkout</p>
+                      <p className="text-amber-700/80 text-[10px]">{t("product_detail.apply_at_checkout")}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 pt-2">
                     <div className="flex items-center gap-2 text-green-600 font-bold text-xs">
-                      <Truck className="w-4 h-4" /> FRETE GRÁTIS BRASIL
+                      <Truck className="w-4 h-4" /> {t("product_detail.free_shipping")}
                     </div>
                     <div className="h-4 w-px bg-gray-200" />
                     <div className="flex items-center gap-2 text-cyan-600 font-bold text-xs">
-                      <Zap className="w-4 h-4" /> ENVIO EM 24H
+                      <Zap className="w-4 h-4" /> {t("product_detail.shipping_24h")}
                     </div>
                   </div>
                 </div>
@@ -279,7 +285,7 @@ const ProductDetail = () => {
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
                   <Check className="w-4 h-4 md:w-5 md:h-5 text-cyan-600" />
-                  O que está incluso:
+                  {t("product_detail.what_is_included")}
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 md:gap-3">
                   {(product.features && product.features.length > 0 
@@ -325,7 +331,7 @@ const ProductDetail = () => {
                     className="w-full rounded-full font-bold text-sm md:text-base py-2 md:py-3 transition-all bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white shadow-lg hover:shadow-xl"
                   >
                     <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                    Adicionar ao Carrinho
+                    {t("product_detail.add_to_cart")}
                   </Button>
                   <a href="https://wa.me/5519989429972" target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button 
@@ -333,7 +339,7 @@ const ProductDetail = () => {
                       className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-full font-bold text-sm md:text-base py-2 md:py-3 shadow-lg hover:shadow-xl transition-all"
                     >
                       <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />
-                      Comprar pelo WhatsApp
+                      {t("product_detail.buy_via_whatsapp")}
                     </Button>
                   </a>
                   <a href="tel:+5519989429972" className="w-full">
@@ -343,7 +349,7 @@ const ProductDetail = () => {
                       className="w-full rounded-full font-bold text-sm md:text-base py-2 md:py-3 border-2 hover:bg-gray-50"
                     >
                       <Phone className="w-4 h-4 md:w-5 md:h-5" />
-                      Ligar Agora
+                      {t("product_detail.call_now")}
                     </Button>
                   </a>
                 </div>
@@ -357,7 +363,7 @@ const ProductDetail = () => {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 text-xs md:text-sm">{product.warranty}</p>
-                    <p className="text-xs text-gray-600">Garantia</p>
+                    <p className="text-xs text-gray-600">{t("product_detail.warranty_label")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-green-50 rounded-full border-2 border-green-200 hover:shadow-md transition-all">
@@ -365,8 +371,8 @@ const ProductDetail = () => {
                     <Truck className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-xs md:text-sm">Envio Seguro</p>
-                    <p className="text-xs text-gray-600">Brasil todo</p>
+                    <p className="font-bold text-gray-900 text-xs md:text-sm">{t("product_detail.safe_shipping")}</p>
+                    <p className="text-xs text-gray-600">{t("product_detail.all_brazil")}</p>
                   </div>
                 </div>
               </div>
@@ -389,7 +395,7 @@ const ProductDetail = () => {
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
                       <PlayCircle className="w-7 h-7 text-white" />
                     </div>
-                    <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-900">Demonstração em Vídeo</h2>
+                    <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-900">{t("product_detail.video_demo")}</h2>
                   </div>
 
                   <div className="rounded-2xl md:rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-black aspect-video relative group">
@@ -409,7 +415,7 @@ const ProductDetail = () => {
                         poster={product.image}
                       >
                         <source src={product.videoUrl} type="video/mp4" />
-                        Seu navegador não suporta vídeos.
+                        {t("product_detail.video_not_supported")}
                       </video>
                     )}
                   </div>
@@ -424,14 +430,14 @@ const ProductDetail = () => {
                       <Music className="w-8 md:w-10 h-8 md:h-10 text-white" />
                     </div>
                     <div className="flex-1 text-center md:text-left">
-                      <h3 className="text-xl md:text-2xl font-bold mb-2 text-slate-900">Apresentação em Áudio</h3>
-                      <p className="text-gray-500 text-sm md:text-base mb-6">Ouça os detalhes técnicos e benefícios deste produto</p>
+                      <h3 className="text-xl md:text-2xl font-bold mb-2 text-slate-900">{t("product_detail.audio_demo")}</h3>
+                      <p className="text-gray-500 text-sm md:text-base mb-6">{t("product_detail.audio_desc")}</p>
                       <audio 
                         controls 
                         className="w-full custom-audio-player h-12 filter opacity-80 hover:opacity-100 transition-opacity"
                       >
                         <source src={product.audioUrl} type="audio/mpeg" />
-                        Seu navegador não suporta áudio.
+                        {t("product_detail.audio_not_supported")}
                       </audio>
                     </div>
                   </div>
@@ -447,14 +453,14 @@ const ProductDetail = () => {
         <div className="container mx-auto px-3 md:px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-8 md:mb-12 lg:mb-16 flex items-center gap-3">
             <span className="w-1 h-8 md:h-10 lg:h-12 bg-gradient-to-b from-cyan-600 to-cyan-500 rounded-full" />
-            Comparação de Modelos
+            {t("product_detail.model_comparison")}
           </h2>
 
           <div className="overflow-x-auto bg-white rounded-lg md:rounded-2xl border-2 border-gray-200 shadow-xl">
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-green-600 to-green-700 text-white">
-                  <th className="px-3 md:px-6 py-2 md:py-4 text-left font-bold text-xs sm:text-sm md:text-base lg:text-lg">Características</th>
+                  <th className="px-3 md:px-6 py-2 md:py-4 text-left font-bold text-xs sm:text-sm md:text-base lg:text-lg">{t("product_detail.characteristics")}</th>
                   <th className="px-2 md:px-6 py-2 md:py-4 text-center font-bold text-xs sm:text-sm md:text-base lg:text-lg">ABNT</th>
                   <th className="px-2 md:px-6 py-2 md:py-4 text-center font-bold text-xs sm:text-sm md:text-base lg:text-lg">COM SENSOR</th>
                   <th className="px-2 md:px-6 py-2 md:py-4 text-center font-bold text-xs sm:text-sm md:text-base lg:text-lg">SEM SENSOR</th>
@@ -462,21 +468,21 @@ const ProductDetail = () => {
               </thead>
               <tbody>
                 {[
-                  "Acionador",
-                  "Fixação Cremalheira",
-                  "Central",
-                  "Suporte da Coluna",
-                  "Controle Remoto",
-                  "Botão no Painel",
-                  "Sinal Sonoro",
-                  "Chicote com Sensor",
-                  "Sensor Antiesmagamento",
-                  "Sensor Antesmagamento",
-                  "Borda Sensível Antiesmagamento",
-                  "Proteção Cremalheira",
-                  "Sinais Luminosos",
-                  "Sensor Van Estacionada",
-                  "Adesivos Conforme Norma ABNT",
+                  t("product_detail.comp_actuator"),
+                  t("product_detail.comp_rack_fixation"),
+                  t("product_detail.comp_central"),
+                  t("product_detail.comp_column_support"),
+                  t("product_detail.comp_remote"),
+                  t("product_detail.comp_panel_button"),
+                  t("product_detail.comp_beeper"),
+                  t("product_detail.comp_harness_sensor"),
+                  t("product_detail.comp_anti_crush"),
+                  t("product_detail.comp_anti_crush"),
+                  t("product_detail.comp_anti_crush_edge"),
+                  t("product_detail.comp_rack_protection"),
+                  t("product_detail.comp_light_signals"),
+                  t("product_detail.comp_parked_van"),
+                  t("product_detail.comp_abnt_stickers"),
                 ].map((feature, idx) => {
                   const abnt = true;
                   const comSensor = true;
@@ -519,11 +525,11 @@ const ProductDetail = () => {
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
-              <span className="text-gray-700">Incluído</span>
+              <span className="text-gray-700">{t("product_detail.included")}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 font-bold">✕</span>
-              <span className="text-gray-700">Não incluído</span>
+              <span className="text-gray-700">{t("product_detail.not_included")}</span>
             </div>
           </div>
         </div>
@@ -534,14 +540,14 @@ const ProductDetail = () => {
         <div className="container mx-auto px-3 md:px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-8 md:mb-12 lg:mb-16 flex items-center gap-3">
             <span className="w-1 h-8 md:h-10 bg-gradient-to-b from-cyan-600 to-cyan-500 rounded-full" />
-            O Que Clientes Dizem
+            {t("product_detail.what_clients_say")}
           </h2>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
-              { name: "João Silva", role: "Proprietário de Van", rating: 5, text: "Produto excelente! Instalação rápida e funciona perfeitamente." },
-              { name: "Maria Santos", role: "Transportadora", rating: 5, text: "Melhorou muito minha produtividade. Muito bom mesmo!" },
-              { name: "Carlos Oliveira", role: "Profissional Autônomo", rating: 5, text: "Suporte impecável, produto de qualidade superior." },
+              { name: t("product_detail.review_1_name"), role: t("product_detail.review_1_role"), rating: 5, text: t("product_detail.review_1_text") },
+              { name: t("product_detail.review_2_name"), role: t("product_detail.review_2_role"), rating: 5, text: t("product_detail.review_2_text") },
+              { name: t("product_detail.review_3_name"), role: t("product_detail.review_3_role"), rating: 5, text: t("product_detail.review_3_text") },
             ].map((review, idx) => (
               <div key={idx} className="bg-white rounded-lg md:rounded-2xl border-2 border-gray-100 p-4 md:p-6 hover:border-cyan-400 hover:shadow-xl transition-all">
                 <div className="flex items-center gap-1 mb-3 md:mb-4">
@@ -561,7 +567,7 @@ const ProductDetail = () => {
           <div className="mt-8 md:mt-10 lg:mt-12 text-center">
             <p className="text-gray-600 mb-3 md:mb-4 flex items-center justify-center gap-2 text-sm md:text-base">
               <Users className="w-4 h-4 md:w-5 md:h-5 text-cyan-600" />
-              <span className="font-semibold">+1.200 clientes satisfeitos</span>
+              <span className="font-semibold">{t("product_detail.satisfied_clients_count")}</span>
             </p>
           </div>
         </div>
@@ -572,7 +578,7 @@ const ProductDetail = () => {
         <div className="container mx-auto px-3 md:px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-8 md:mb-12 lg:mb-16 flex items-center gap-3">
             <span className="w-1 h-8 md:h-10 lg:h-12 bg-gradient-to-b from-cyan-600 to-cyan-500 rounded-full" />
-            Garantia e Suporte
+            {t("product_detail.warranty_support")}
           </h2>
 
           <div className="grid md:grid-cols-2 gap-4 md:gap-6 lg:gap-8 max-w-4xl mx-auto">
@@ -580,9 +586,9 @@ const ProductDetail = () => {
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center mb-4 md:mb-6 shadow-lg">
                 <Shield className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
-              <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-2 md:mb-4">12 Meses de Garantia</h3>
+              <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-2 md:mb-4">{t("product_detail.installments")}</h3>
               <p className="text-gray-700 text-sm md:text-base lg:text-lg leading-relaxed">
-                Cobertura completa de fábrica com suporte técnico para todo o Brasil. Sua tranquilidade é nossa prioridade.
+                {t("product_detail.garantee_text")}
               </p>
             </div>
 
@@ -590,9 +596,9 @@ const ProductDetail = () => {
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center mb-4 md:mb-6 shadow-lg">
                 <MessageCircle className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">Suporte Completo</h3>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">{t("product_detail.support_label")}</h3>
               <p className="text-gray-700 text-sm md:text-base lg:text-lg leading-relaxed">
-                Nossa equipe está pronta para te ajudar com qualquer dúvida sobre instalação ou uso do produto.
+                {t("product_detail.support_text")}
               </p>
             </div>
           </div>
@@ -604,26 +610,26 @@ const ProductDetail = () => {
         <div className="container mx-auto px-3 md:px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-8 md:mb-12 lg:mb-16 flex items-center gap-3">
             <span className="w-1 h-8 md:h-10 lg:h-12 bg-gradient-to-b from-cyan-600 to-cyan-500 rounded-full" />
-            Perguntas Frequentes
+            {t("product_detail.faq")}
           </h2>
 
           <div className="max-w-3xl mx-auto space-y-3 md:space-y-4">
             {[
               {
-                q: "Serve para outros modelos de van?",
-                a: "Não, este modelo é específico para o veículo indicado. Temos soluções personalizadas para cada modelo de van."
+                q: t("product_detail.faq_q1"),
+                a: t("product_detail.faq_a1")
               },
               {
-                q: "A instalação é complicada?",
-                a: "Não! Temos todos os vídeos no site explicando como instalar. É fácil e rápido. Caso prefira, temos uma ampla rede de técnicos parceiros aptos para instalar sua Porta Automática em todo Brasil."
+                q: t("product_detail.faq_q2"),
+                a: t("product_detail.faq_a2")
               },
               {
-                q: "É seguro?",
-                a: "Sim! Utilizamos os melhores materiais na produção. Nossas portas contam com sensor antiesmagamento e 12 meses de garantia."
+                q: t("product_detail.faq_q3"),
+                a: t("product_detail.faq_a3")
               },
               {
-                q: "Posso devolver?",
-                a: "Se não ficar satisfeito com nosso produto no prazo de 30 dias, devolvemos seu dinheiro (consulte condições)."
+                q: t("product_detail.faq_q4"),
+                a: t("product_detail.faq_a4")
               },
             ].map((faq, idx) => (
               <button
@@ -656,10 +662,10 @@ const ProductDetail = () => {
 
         <div className="container mx-auto px-3 md:px-4 relative z-10 text-center max-w-3xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6">
-            Garanta Mais Conforto e Praticidade
+            {t("hero.anniversary").split(" ")[0]} {t("hero.years")}
           </h2>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-8 md:mb-12">
-            Transforme a forma como você trabalha e ganhe mais tempo e segurança com a Porta Automática para Vans.
+            {t("product_detail.garantee_text")}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
@@ -669,7 +675,7 @@ const ProductDetail = () => {
                 className="w-full bg-white text-cyan-600 hover:bg-gray-100 rounded-lg md:rounded-xl font-bold text-sm md:text-base lg:text-lg py-2 md:py-3 shadow-xl hover:shadow-2xl transition-all"
               >
                 <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />
-                Comprar Agora
+                {t("home.buy_now")}
               </Button>
             </a>
             <a href="tel:+5519989429972" className="w-full sm:w-auto">
@@ -679,7 +685,7 @@ const ProductDetail = () => {
                 className="w-full text-white border-2 border-white hover:bg-white/10 rounded-lg md:rounded-xl font-bold text-sm md:text-base lg:text-lg py-2 md:py-3"
               >
                 <Phone className="w-4 h-4 md:w-5 md:h-5" />
-                Ligar Agora
+                {t("product_detail.call_now")}
               </Button>
             </a>
           </div>
@@ -691,13 +697,13 @@ const ProductDetail = () => {
         <div className="container mx-auto px-3 md:px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6 md:mb-8 lg:mb-12 flex items-center gap-3">
             <span className="w-1 h-8 md:h-10 bg-gradient-to-b from-cyan-600 to-cyan-500 rounded-full" />
-            Produtos Relacionados
+            {t("product_detail.related_products")}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {relatedProducts.map((item) => (
               <Link 
                 key={item.id} 
-                to={`/produto/${item.id}`}
+                to={toL(`/produto/${item.id}`)}
                 className="group bg-white rounded-lg md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-100 hover:border-cyan-400"
               >
                 <div className="relative aspect-square bg-gradient-to-br from-cyan-50 to-white flex items-center justify-center overflow-hidden">

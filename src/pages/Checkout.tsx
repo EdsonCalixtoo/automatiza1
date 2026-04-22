@@ -2,7 +2,8 @@ import { useState, FormEvent, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useProducts } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import { createOrder, updateOrderStatus } from "@/lib/orderService";
@@ -56,6 +57,10 @@ export default function Checkout() {
   const { products, useCoupon } = useProducts();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -143,27 +148,27 @@ export default function Checkout() {
 
         // Calcular frete baseado no estado
         const shippingCosts: { [key: string]: { cost: number; time: string } } = {
-          SP: { cost: 15.9, time: "2-3 dias úteis" },
-          RJ: { cost: 18.5, time: "3-4 dias úteis" },
-          MG: { cost: 19.9, time: "3-5 dias úteis" },
-          BA: { cost: 29.9, time: "5-7 dias úteis" },
-          RS: { cost: 24.9, time: "4-6 dias úteis" },
-          PR: { cost: 17.5, time: "2-4 dias úteis" },
-          SC: { cost: 22.5, time: "3-5 dias úteis" },
-          PE: { cost: 28.5, time: "5-7 dias úteis" },
-          CE: { cost: 29.9, time: "5-7 dias úteis" },
-          GO: { cost: 26.5, time: "4-6 dias úteis" },
+          SP: { cost: 15.9, time: `2-3 ${t("common.business_days") || "dias úteis"}` },
+          RJ: { cost: 18.5, time: `3-4 ${t("common.business_days") || "dias úteis"}` },
+          MG: { cost: 19.9, time: `3-5 ${t("common.business_days") || "dias úteis"}` },
+          BA: { cost: 29.9, time: `5-7 ${t("common.business_days") || "dias úteis"}` },
+          RS: { cost: 24.9, time: `4-6 ${t("common.business_days") || "dias úteis"}` },
+          PR: { cost: 17.5, time: `2-4 ${t("common.business_days") || "dias úteis"}` },
+          SC: { cost: 22.5, time: `3-5 ${t("common.business_days") || "dias úteis"}` },
+          PE: { cost: 28.5, time: `5-7 ${t("common.business_days") || "dias úteis"}` },
+          CE: { cost: 29.9, time: `5-7 ${t("common.business_days") || "dias úteis"}` },
+          GO: { cost: 26.5, time: `4-6 ${t("common.business_days") || "dias úteis"}` },
         };
 
         const shipping = shippingCosts[address.state] || {
           cost: 35.0,
-          time: "7-10 dias úteis",
+          time: `7-10 ${t("common.business_days") || "dias úteis"}`,
         };
 
         setShippingCost(shipping.cost);
         setShippingTime(shipping.time);
       } else {
-        setCepError("CEP não encontrado. Verifique e tente novamente.");
+        setCepError(t("checkout.error_cep_not_found"));
         setFormData((prev) => ({
           ...prev,
           street: "",
@@ -181,7 +186,7 @@ export default function Checkout() {
   // Aplicar cupom de desconto
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) {
-      setCouponMessage("Digite um código de cupom");
+      setCouponMessage(t("checkout.coupon_empty_error"));
       setCouponApplied(false);
       return;
     }
@@ -239,27 +244,27 @@ export default function Checkout() {
     const newErrors: FormErrors = {};
 
     // Validação de cliente
-    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório";
+    if (!formData.name.trim()) newErrors.name = t("checkout.error_name_required");
     if (!formData.email.trim()) {
-      newErrors.email = "Email é obrigatório";
+      newErrors.email = t("checkout.error_email_required");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Email inválido";
+      newErrors.email = t("checkout.error_email_invalid");
     }
-    if (!formData.phone.trim()) newErrors.phone = "Telefone é obrigatório";
-    if (!formData.cpfCnpj.trim()) newErrors.cpfCnpj = "CPF/CNPJ é obrigatório";
-    if (!formData.anoVeiculo.trim()) newErrors.anoVeiculo = "Ano do veículo é obrigatório";
+    if (!formData.phone.trim()) newErrors.phone = t("checkout.error_phone_required");
+    if (!formData.cpfCnpj.trim()) newErrors.cpfCnpj = t("checkout.error_cpf_cnpj_required");
+    if (!formData.anoVeiculo.trim()) newErrors.anoVeiculo = t("checkout.error_year_required");
     if (formData.anoVeiculo && (isNaN(parseInt(formData.anoVeiculo)) || parseInt(formData.anoVeiculo) < 1970 || parseInt(formData.anoVeiculo) > 2030)) {
-        newErrors.anoVeiculo = "Ano inválido (1970 - 2030)";
+        newErrors.anoVeiculo = t("checkout.error_year_invalid");
     }
 
     // Validação de endereço
     if (shippingMethod === "entrega") {
-      if (!formData.cep.trim()) newErrors.cep = "CEP é obrigatório";
-      if (!formData.street.trim()) newErrors.street = "Rua é obrigatória";
-      if (!formData.neighborhood.trim()) newErrors.neighborhood = "Bairro é obrigatório";
-      if (!formData.city.trim()) newErrors.city = "Cidade é obrigatória";
-      if (!formData.state.trim()) newErrors.state = "Estado é obrigatório";
-      if (!formData.number.trim()) newErrors.number = "Número é obrigatório";
+      if (!formData.cep.trim()) newErrors.cep = t("checkout.error_cep_required");
+      if (!formData.street.trim()) newErrors.street = t("checkout.error_street_required");
+      if (!formData.neighborhood.trim()) newErrors.neighborhood = t("checkout.error_neighborhood_required");
+      if (!formData.city.trim()) newErrors.city = t("checkout.error_city_required");
+      if (!formData.state.trim()) newErrors.state = t("checkout.error_state_required");
+      if (!formData.number.trim()) newErrors.number = t("checkout.error_number_required");
     }
 
     setErrors(newErrors);
@@ -268,7 +273,7 @@ export default function Checkout() {
 
   const handleConfirmData = async () => {
     if (!validateForm()) {
-        toast.error("Por favor, preencha todos os campos obrigatórios.");
+        toast.error(t("common.fill_required_fields") || "Por favor, preencha todos os campos obrigatórios.");
         return;
     }
 
@@ -286,6 +291,7 @@ export default function Checkout() {
             cliente_telefone: formData.phone,
             cliente_cpf_cnpj: formData.cpfCnpj,
             ano_veiculo: formData.anoVeiculo,
+            lang: currentLang,
             endereco: {
                 cep: formData.cep,
                 rua: formData.street,
@@ -307,9 +313,9 @@ export default function Checkout() {
 
         setOrderCreated(order);
         setDataConfirmed(true);
-        toast.success("Dados confirmados! Escolha a forma de pagamento.");
+        toast.success(t("checkout.data_confirmed_toast"));
     } catch (err: any) {
-        toast.error("Erro ao processar dados: " + err.message);
+        toast.error((t("checkout.error_processing") || "Erro ao processar dados: ") + err.message);
     } finally {
         setLoading(false);
     }
@@ -353,11 +359,11 @@ export default function Checkout() {
 
           {/* Texto */}
           <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-4 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Pedido Confirmado! 🎉
+            {t("checkout.success_title")}
           </h1>
 
           <p className="text-xl text-cyan-700 mb-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            Seu pedido foi finalizado com sucesso
+            {t("checkout.success_subtitle")}
           </p>
 
           {/* Detalhes */}
@@ -367,26 +373,26 @@ export default function Checkout() {
                 <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center">
                   <Check className="w-5 h-5 text-cyan-600" />
                 </div>
-                <span className="font-semibold">Email de confirmação enviado</span>
+                <span className="font-semibold">{t("checkout.success_email_alert")}</span>
               </div>
               <div className="flex items-center gap-3 text-slate-700">
                 <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center">
                   <Check className="w-5 h-5 text-cyan-600" />
                 </div>
-                <span className="font-semibold">Pedido aprovado para processamento</span>
+                <span className="font-semibold">{t("checkout.success_approved_alert")}</span>
               </div>
               <div className="flex items-center gap-3 text-slate-700">
                 <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center">
                   <Check className="w-5 h-5 text-cyan-600" />
                 </div>
-                <span className="font-semibold">Rastreie seu status em nossa plataforma</span>
+                <span className="font-semibold">{t("checkout.success_tracking_alert")}</span>
               </div>
             </div>
           </div>
 
           {/* Contador automático */}
           <p className="text-cyan-600 font-bold text-sm animate-fade-in" style={{ animationDelay: "0.8s" }}>
-            ⏱️ Redirecionando em alguns segundos...
+            ⏱️ {t("checkout.redirecting")}
           </p>
         </div>
 
@@ -424,15 +430,15 @@ export default function Checkout() {
               className="flex items-center gap-2 text-cyan-600 hover:text-cyan-700 font-semibold mb-6 transition-all group hover:gap-3"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" />
-              Voltar ao Carrinho
+              {t("checkout.back_to_cart")}
             </button>
 
             <div className="space-y-4">
               <div className="space-y-2">
                 <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-cyan-600 to-blue-800 bg-clip-text text-transparent drop-shadow-sm leading-tight">
-                  Finalizar Compra
+                  {t("checkout.title")}
                 </h1>
-                <p className="text-gray-700 font-medium text-lg">Você está a um passo de receber seu pedido! ✨</p>
+                <p className="text-gray-700 font-medium text-lg">{t("checkout.subtitle")}</p>
               </div>
 
               {/* Progress Bars */}
@@ -457,14 +463,14 @@ export default function Checkout() {
                   <Heart className="w-16 h-16 text-cyan-600 animate-pulse" />
                 </div>
                 <div>
-                  <p className="text-gray-900 font-bold text-2xl mb-2">Seu carrinho está vazio</p>
-                  <p className="text-gray-600 mb-8 text-lg">Explore nossos produtos e adicione itens para começar sua compra</p>
+                  <p className="text-gray-900 font-bold text-2xl mb-2">{t("checkout.empty_cart_title")}</p>
+                  <p className="text-gray-600 mb-8 text-lg">{t("checkout.empty_cart_desc")}</p>
                   <button
                     type="button"
-                    onClick={() => navigate("/produtos")}
+                    onClick={() => navigate(toL("/produtos"))}
                     className="px-8 py-4 bg-gradient-to-r from-cyan-600 via-cyan-700 to-blue-700 hover:from-cyan-700 hover:via-cyan-800 hover:to-blue-800 text-white rounded-full font-bold text-lg transition-all hover:shadow-2xl active:scale-95 shadow-lg"
                   >
-                    Explorar Produtos
+                    {t("checkout.explore_products")}
                   </button>
                 </div>
               </div>
@@ -482,8 +488,8 @@ export default function Checkout() {
                         <Package className="w-8 h-8 text-cyan-600" />
                       </div>
                       <div>
-                        <h2 className="text-3xl font-black text-gray-900">Seus Itens</h2>
-                        <p className="text-gray-600 text-sm font-medium">{items.length} {items.length === 1 ? "item" : "itens"} no carrinho</p>
+                        <h2 className="text-3xl font-black text-gray-900">{t("checkout.your_items")}</h2>
+                        <p className="text-gray-600 text-sm font-medium">{items.length} {items.length === 1 ? t("common.item") : t("common.items")} {t("checkout.in_cart")}</p>
                       </div>
                     </div>
 
@@ -538,7 +544,7 @@ export default function Checkout() {
                       <div className="p-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl border border-blue-300/50 backdrop-blur-sm">
                         <AlertCircle className="w-8 h-8 text-blue-600" />
                       </div>
-                      <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Seus Dados</h2>
+                      <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{t("checkout.your_data")}</h2>
                     </div>
 
                     {/* Aviso de usuário logado */}
@@ -548,9 +554,9 @@ export default function Checkout() {
                           <Check className="w-5 h-5 text-green-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-bold text-green-900">Você está logado!</p>
+                          <p className="font-bold text-green-900">{t("checkout.logged_in_alert")}</p>
                           <p className="text-sm text-green-800 mt-1">
-                            Seus dados foram carregados automaticamente. Se ainda não preencheu seu perfil, complete as informações abaixo.
+                            {t("checkout.logged_in_desc")}
                           </p>
                         </div>
                       </div>
@@ -561,7 +567,7 @@ export default function Checkout() {
                         <div className="space-y-2">
                           <label className="block text-sm font-bold text-gray-700 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">1</span>
-                            Nome Completo *
+                            {t("checkout.label_name")} *
                           </label>
                           <Input
                             type="text"
@@ -581,8 +587,8 @@ export default function Checkout() {
                         <div className="space-y-2">
                           <label className="block text-sm font-bold text-gray-700 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">2</span>
-                            Email *
-                            {user && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✓ Verificado</span>}
+                            {t("checkout.label_email")} *
+                            {user && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✓ {t("checkout.verified")}</span>}
                           </label>
                           <Input
                             type="email"
@@ -596,7 +602,7 @@ export default function Checkout() {
                               }`}
                           />
                           {user && (
-                            <p className="text-xs text-green-600 font-semibold">Email não pode ser alterado (verificado no cadastro)</p>
+                            <p className="text-xs text-green-600 font-semibold">{t("checkout.email_not_changeable")}</p>
                           )}
                           {errors.email && (
                             <span className="text-red-600 text-sm font-bold flex items-center gap-1">
@@ -611,7 +617,7 @@ export default function Checkout() {
                         <div className="space-y-2">
                           <label className="block text-sm font-bold text-gray-700 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">3</span>
-                            Telefone *
+                            {t("checkout.label_phone")} *
                           </label>
                           <Input
                             type="tel"
@@ -631,7 +637,7 @@ export default function Checkout() {
                         <div className="space-y-2">
                           <label className="block text-sm font-bold text-gray-700 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">4</span>
-                            Ano do Veículo *
+                            {t("checkout.label_vehicle_year")} *
                           </label>
                           <Input
                             type="text"
@@ -653,7 +659,7 @@ export default function Checkout() {
                       <div className="space-y-2 sm:col-span-2">
                         <label className="block text-sm font-bold text-gray-700 flex items-center gap-2">
                           <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">5</span>
-                          CPF/CNPJ *
+                          {t("checkout.label_cpf_cnpj")} *
                         </label>
                         <Input
                           type="text"
@@ -682,7 +688,7 @@ export default function Checkout() {
                       <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-300/50 backdrop-blur-sm">
                         <MapPin className="w-8 h-8 text-purple-600" />
                       </div>
-                      <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Método de Entrega</h2>
+                      <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{t("checkout.shipping_method_title")}</h2>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -696,8 +702,8 @@ export default function Checkout() {
                       >
                         <Truck className={`w-8 h-8 ${shippingMethod === "entrega" ? "text-purple-600" : "text-gray-400"}`} />
                         <div>
-                          <p className={`font-black uppercase text-xs tracking-wider ${shippingMethod === "entrega" ? "text-purple-700" : "text-gray-600"}`}>Entrega via Transportadora</p>
-                          <p className="text-sm text-gray-500 font-medium">Enviamos para todo Brasil</p>
+                          <p className={`font-black uppercase text-xs tracking-wider ${shippingMethod === "entrega" ? "text-purple-700" : "text-gray-600"}`}>{t("checkout.shipping_delivery")}</p>
+                          <p className="text-sm text-gray-500 font-medium">{t("checkout.shipping_delivery_desc")}</p>
                         </div>
                       </button>
 
@@ -711,8 +717,8 @@ export default function Checkout() {
                       >
                         <MapPin className={`w-8 h-8 ${shippingMethod === "retirada" ? "text-purple-600" : "text-gray-400"}`} />
                         <div>
-                          <p className={`font-black uppercase text-xs tracking-wider ${shippingMethod === "retirada" ? "text-purple-700" : "text-gray-600"}`}>Retirada na Empresa</p>
-                          <p className="text-sm text-gray-500 font-medium italic">Grátis - Campinas, SP</p>
+                          <p className={`font-black uppercase text-xs tracking-wider ${shippingMethod === "retirada" ? "text-purple-700" : "text-gray-600"}`}>{t("checkout.shipping_pickup")}</p>
+                          <p className="text-sm text-gray-500 font-medium italic">{t("checkout.shipping_pickup_desc")}</p>
                         </div>
                       </button>
                     </div>
@@ -724,12 +730,14 @@ export default function Checkout() {
                             <MapPin className="w-6 h-6 text-purple-600" />
                           </div>
                           <div className="space-y-2">
-                            <p className="font-black text-purple-900 text-lg">Endereço de Retirada:</p>
+                            <p className="font-black text-purple-900 text-lg">{t("checkout.pickup_address_title")}</p>
                             <p className="text-gray-700 font-medium leading-relaxed">
-                              R. Dr. Élton César, 910<br />
-                              Chácaras Campos dos Amarais - Campinas, SP<br />
-                              CEP: 13082-025<br />
-                              <span className="text-purple-700 font-bold">Horário: Seg a Sex 07:00 às 16:00</span>
+                            <p className="text-gray-700 font-medium leading-relaxed">
+                              {t("checkout.pickup_address")}<br />
+                              {t("checkout.pickup_city")}<br />
+                              {t("checkout.pickup_cep")}<br />
+                              <span className="text-purple-700 font-bold">{t("checkout.pickup_hours")}</span>
+                            </p>
                             </p>
                             <div className="mt-4 p-3 bg-green-100/50 border border-green-200 rounded-xl">
                               <p className="text-green-700 text-sm font-bold flex items-center gap-2">
@@ -745,7 +753,7 @@ export default function Checkout() {
                       {/* CEP Input */}
                       <div className="space-y-2">
                         <label className="block text-sm font-bold text-gray-700">
-                          CEP * <span className="text-purple-600">Buscar</span>
+                          {t("checkout.label_cep")} * <span className="text-purple-600">{t("checkout.search")}</span>
                         </label>
                         <div className="flex gap-3">
                           <Input
@@ -767,7 +775,7 @@ export default function Checkout() {
                         {cepLoading && (
                           <div className="flex items-center gap-2 text-purple-600 font-bold">
                             <Loader className="w-5 h-5 animate-spin" />
-                            Buscando endereço...
+                            {t("checkout.searching_address")}
                           </div>
                         )}
                         {cepError && (
@@ -786,16 +794,16 @@ export default function Checkout() {
                           <div className="mt-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-sm backdrop-blur-sm">
                             <p className="text-green-700 font-black flex items-center gap-2 text-lg mb-2">
                               <Check className="w-6 h-6" />
-                              Entrega em {shippingTime}
+                              {t("checkout.delivery_info_time")} {shippingTime}
                             </p>
-                            <p className="text-green-600 font-bold">Frete: {formatCurrency(shippingCost)}</p>
+                            <p className="text-green-600 font-bold">{t("checkout.delivery_info_cost")}: {formatCurrency(shippingCost)}</p>
                           </div>
                         )}
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="sm:col-span-2 space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Rua *</label>
+                          <label className="block text-sm font-bold text-gray-700">{t("checkout.label_street")} *</label>
                           <Input
                             type="text"
                             value={formData.street}
@@ -812,7 +820,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Bairro *</label>
+                          <label className="block text-sm font-bold text-gray-700">{t("checkout.label_neighborhood")} *</label>
                           <Input
                             type="text"
                             value={formData.neighborhood}
@@ -829,7 +837,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Número *</label>
+                          <label className="block text-sm font-bold text-gray-700">{t("checkout.label_number")} *</label>
                           <Input
                             type="text"
                             value={formData.number}
@@ -847,7 +855,7 @@ export default function Checkout() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block text-sm font-bold text-gray-700">Complemento (Apto, Bloco, etc)</label>
+                        <label className="block text-sm font-bold text-gray-700">{t("checkout.label_complement")}</label>
                         <Input
                           type="text"
                           value={formData.complement}
@@ -859,7 +867,7 @@ export default function Checkout() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Cidade *</label>
+                          <label className="block text-sm font-bold text-gray-700">{t("checkout.label_city")} *</label>
                           <Input
                             type="text"
                             value={formData.city}
@@ -876,7 +884,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Estado *</label>
+                          <label className="block text-sm font-bold text-gray-700">{t("checkout.label_state")} *</label>
                           <Input
                             type="text"
                             value={formData.state}
@@ -904,7 +912,7 @@ export default function Checkout() {
                         <div className="p-4 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl border border-amber-300/50 backdrop-blur-sm">
                           <Lock className="w-8 h-8 text-amber-600" />
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Pagamento Seguro</h2>
+                        <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{t("checkout.payment_method")}</h2>
                       </div>
 
                       {!dataConfirmed ? (
@@ -912,7 +920,7 @@ export default function Checkout() {
                             <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-100 flex items-start gap-3">
                                 <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
                                 <p className="text-amber-800 font-medium">
-                                    Preencha todos os campos acima (contato, ano do veículo e endereço) para liberar as opções de pagamento.
+                                    {t("checkout.fill_all_fields_alert") || "Preencha todos os campos acima (contato, ano do veículo e endereço) para liberar as opções de pagamento."}
                                 </p>
                             </div>
                             <button
@@ -920,14 +928,14 @@ export default function Checkout() {
                                 disabled={loading}
                                 className="w-full py-5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black text-xl rounded-2xl transition-all active:scale-95 shadow-lg border-b-4 border-orange-800 disabled:opacity-50"
                             >
-                                {loading ? "Processando..." : "Confirmar Dados e Ir para Pagamento"}
+                                {loading ? t("checkout.confirming_data") : t("checkout.confirm_data_button")}
                             </button>
                         </div>
                       ) : (
                         <div key={`payment-container-${orderCreated?.id}`} className="p-4 bg-white rounded-3xl border-2 border-amber-200/50 shadow-inner w-full overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
                           <MercadoPagoPayment
                             amount={finalTotal}
-                            description={`Pedido Automatiza - ${items.length} itens`}
+                            description={`${t("checkout.order_automatiza")} - ${items.length} ${items.length === 1 ? t("common.item") : t("common.items")}`}
                             externalReference={orderCreated?.id}
                             payerEmail={formData.email || "cliente@automatiza.com.br"}
                             onPaymentSuccess={(paymentData) => {
@@ -956,7 +964,7 @@ export default function Checkout() {
                       <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-300/50 backdrop-blur-sm">
                         <Gift className="w-8 h-8 text-green-600" />
                       </div>
-                      <h2 className="text-3xl font-black text-gray-900">Cupom de Desconto</h2>
+                      <h2 className="text-3xl font-black text-gray-900">{t("checkout.coupon_title")}</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -969,7 +977,7 @@ export default function Checkout() {
                             setCouponMessage("");
                           }}
                           onKeyPress={(e) => e.key === "Enter" && handleApplyCoupon()}
-                          placeholder="Digite o código do cupom"
+                          placeholder={t("checkout.coupon_placeholder")}
                           disabled={couponApplied}
                           className="flex-1 px-5 py-4 rounded-2xl border-2 border-green-200 bg-green-50/30 focus:border-green-500 focus:bg-green-50/50 transition-all backdrop-blur-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         />
@@ -980,7 +988,7 @@ export default function Checkout() {
                             className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-2xl transition-all active:scale-95 hover:shadow-lg shadow-md border border-green-400/50 flex items-center gap-2"
                           >
                             <Zap className="w-5 h-5" />
-                            Aplicar
+                            {t("checkout.coupon_button")}
                           </button>
                         ) : (
                           <button
@@ -989,7 +997,7 @@ export default function Checkout() {
                             className="px-8 py-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold rounded-2xl transition-all active:scale-95 hover:shadow-lg shadow-md border border-red-400/50 flex items-center gap-2"
                           >
                             <X className="w-5 h-5" />
-                            Remover
+                            {t("common.remove") || "Remover"}
                           </button>
                         )}
                       </div>
@@ -1020,7 +1028,7 @@ export default function Checkout() {
                   {/* O botão de finalizar agora é controlado pelo Mercado Pago Brick */}
                   <div className="p-4 text-center text-gray-500 text-sm font-medium">
                     <Lock className="w-4 h-4 inline-block mr-1" />
-                    Pagamento processado com segurança pelo Mercado Pago
+                    {t("checkout.secure_payment_footer") || "Pagamento processado com segurança pelo Mercado Pago"}
                   </div>
                 </div>
               </div>
@@ -1030,11 +1038,11 @@ export default function Checkout() {
                 <div className="rounded-3xl sticky top-40 space-y-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
                   {/* Cartão Principal */}
                   <div className="bg-gradient-to-br from-white via-cyan-50/20 to-white rounded-3xl p-8 border-2 border-cyan-300/50 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-300">
-                    <h3 className="text-3xl font-black text-gray-900 mb-8">Resumo Final</h3>
+                    <h3 className="text-3xl font-black text-gray-900 mb-8">{t("checkout.order_summary")}</h3>
 
                     <div className="space-y-6 border-t-2 border-gray-200 pt-6">
                       <div className="flex justify-between items-end">
-                        <span className="text-gray-700 font-bold text-lg">Subtotal</span>
+                        <span className="text-gray-700 font-bold text-lg">{t("checkout.subtotal")}</span>
                         <span className="font-black text-gray-900 text-2xl">{formatCurrency(itemsSubtotal)}</span>
                       </div>
 
@@ -1042,7 +1050,7 @@ export default function Checkout() {
                         <div className="flex justify-between items-end">
                           <span className="text-gray-700 font-bold text-lg flex items-center gap-2">
                             <Truck className="w-5 h-5" />
-                            Frete
+                            {t("checkout.shipping")}
                           </span>
                           <span className="font-black text-gray-900 text-2xl">{formatCurrency(shippingCost)}</span>
                         </div>
@@ -1052,9 +1060,9 @@ export default function Checkout() {
                         <div className="flex justify-between items-end">
                           <span className="text-green-600 font-bold text-lg flex items-center gap-2">
                             <MapPin className="w-5 h-5" />
-                            Retirada
+                            {t("checkout.shipping_pickup")}
                           </span>
-                          <span className="font-black text-green-600 text-2xl">Grátis</span>
+                          <span className="font-black text-green-600 text-2xl">{t("common.free") || "Grátis"}</span>
                         </div>
                       )}
 
@@ -1062,19 +1070,19 @@ export default function Checkout() {
                         <div className="flex justify-between items-end text-green-600">
                           <span className="font-bold text-lg flex items-center gap-2">
                             <Gift className="w-5 h-5" />
-                            Desconto
+                            {t("checkout.discount")}
                           </span>
                           <span className="font-black text-2xl">-{formatCurrency(couponDiscount)}</span>
                         </div>
                       )}
 
                       <div className="border-t-2 border-gray-200 pt-6 flex justify-between items-end">
-                        <span className="font-black text-gray-900 text-xl">Total a Pagar</span>
+                        <span className="font-black text-gray-900 text-xl">{t("checkout.total")}</span>
                         <div className="space-y-1 text-right">
                           <span className="text-4xl font-black bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
                             {formatCurrency(finalTotal)}
                           </span>
-                          <p className="text-xs font-bold text-cyan-600">em até 12x sem juros</p>
+                          <p className="text-xs font-bold text-cyan-600">{t("checkout.installments")}</p>
                         </div>
                       </div>
                     </div>
@@ -1087,8 +1095,8 @@ export default function Checkout() {
                         <Shield className="w-8 h-8 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-black text-green-900 text-lg mb-2">Compra 100% Segura</p>
-                        <p className="text-green-700 font-semibold text-sm">Seus dados estão protegidos com criptografia SSL de 256 bits</p>
+                        <p className="font-black text-green-900 text-lg mb-2">{t("cta.trust_3")}</p>
+                        <p className="text-green-700 font-semibold text-sm">{t("security.ssl_text")}</p>
                       </div>
                     </div>
                   </div>
@@ -1100,8 +1108,8 @@ export default function Checkout() {
                         <Truck className="w-8 h-8 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-black text-blue-900 text-lg mb-2">Entrega Rápida</p>
-                        <p className="text-blue-700 font-semibold text-sm">Entregamos em todo Brasil com rastreamento em tempo real</p>
+                        <p className="font-black text-blue-900 text-lg mb-2">{t("shipping.fast_delivery")}</p>
+                        <p className="text-blue-700 font-semibold text-sm">{t("shipping.deadline_text")}</p>
                       </div>
                     </div>
                   </div>
@@ -1113,8 +1121,8 @@ export default function Checkout() {
                         <Check className="w-8 h-8 text-purple-600" />
                       </div>
                       <div>
-                        <p className="font-black text-purple-900 text-lg mb-2">Garantia Completa</p>
-                        <p className="text-purple-700 font-semibold text-sm">Devoluções e trocas em até 30 dias sem complicações</p>
+                        <p className="font-black text-purple-900 text-lg mb-2">{t("warranty.title_1")}</p>
+                        <p className="text-purple-700 font-semibold text-sm">{t("returns.summary_text")}</p>
                       </div>
                     </div>
                   </div>

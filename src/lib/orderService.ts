@@ -19,6 +19,7 @@ export async function createOrder(payload: {
     ano_veiculo?: string;
     cliente_cpf_cnpj?: string;
     cartao_final?: string;
+    lang?: string;
 }) {
     const { data, error } = await supabase
         .from("pedidos")
@@ -50,7 +51,8 @@ export async function createOrder(payload: {
         await supabase.functions.invoke('send-order-email', {
             body: { 
                 order: data, 
-                type: 'novo_pedido' 
+                type: 'novo_pedido',
+                lang: payload.lang || 'pt'
             }
         });
     } catch (e) {
@@ -80,7 +82,7 @@ export async function getOrder(orderId: string) {
 export async function updateOrderStatus(
     orderId: string,
     status: "aguardando_pagamento" | "pago" | "cancelado",
-    extra?: { pix_code?: string; pix_qrcode?: string; mp_payment_id?: string; cartao_final?: string }
+    extra?: { pix_code?: string; pix_qrcode?: string; mp_payment_id?: string; cartao_final?: string; lang?: string }
 ) {
     const updateData: any = { status };
     if (extra?.pix_code) updateData.pix_code = extra.pix_code;
@@ -104,7 +106,8 @@ export async function updateOrderStatus(
             await supabase.functions.invoke('send-order-email', {
                 body: { 
                     order: order, 
-                    type: 'pagamento_aprovado' 
+                    type: 'pagamento_aprovado',
+                    lang: extra?.lang || 'pt'
                 }
             });
         } catch (e) {

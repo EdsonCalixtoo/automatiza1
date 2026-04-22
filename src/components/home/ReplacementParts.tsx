@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Zap, Package, Wrench } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Part {
   id: string;
@@ -11,40 +12,42 @@ interface Part {
   color: string;
 }
 
-const parts: Part[] = [
+const getParts = (t: any) => [
   {
     id: "motor",
-    name: "Motor Automático",
-    description: "Motor de alta potência com 80W de potência nominal",
+    name: t("replacement_parts.parts.motor.name"),
+    description: t("replacement_parts.parts.motor.description"),
     icon: Zap,
-    badge: "Essencial",
+    badge: t("replacement_parts.parts.motor.badge"),
     color: "from-blue-500 to-blue-600"
   },
   {
     id: "cremalheira",
-    name: "Cremalheira de Aço",
-    description: "Cremalheira reforçada para máxima durabilidade",
+    name: t("replacement_parts.parts.cremalheira.name"),
+    description: t("replacement_parts.parts.cremalheira.description"),
     icon: Wrench,
     color: "from-gray-500 to-gray-600"
   },
   {
     id: "botao",
-    name: "Botão do Painel",
-    description: "Botão de controle integrado ao painel",
+    name: t("replacement_parts.parts.botao.name"),
+    description: t("replacement_parts.parts.botao.description"),
     icon: Package,
     color: "from-cyan-500 to-cyan-600"
   },
   {
     id: "controle",
-    name: "Controle Remoto",
-    description: "Controle remoto wireless de longo alcance",
+    name: t("replacement_parts.parts.controle.name"),
+    description: t("replacement_parts.parts.controle.description"),
     icon: Zap,
-    badge: "Popular",
+    badge: t("replacement_parts.parts.controle.badge"),
     color: "from-purple-500 to-purple-600"
   },
 ];
 
 export function ReplacementParts() {
+  const { t } = useTranslation();
+  const parts = getParts(t);
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       {/* Background decoration */}
@@ -55,16 +58,15 @@ export function ReplacementParts() {
         <div className="max-w-4xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 mb-6">
             <span className="w-2 h-2 rounded-full bg-cyan-600" />
-            <span className="text-cyan-600 font-semibold text-sm uppercase tracking-wider">Componentes</span>
+            <span className="text-cyan-600 font-semibold text-sm uppercase tracking-wider">{t("replacement_parts.badge")}</span>
           </div>
           
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-            Peças de Reposição e Componentes
+            {t("replacement_parts.title")}
           </h2>
           
           <p className="text-lg text-gray-600 leading-relaxed">
-            Todos os componentes disponíveis para manutenção e reposição, com garantia 
-            e procedência 100% certificada. Qualidade garantida para sua segurança.
+            {t("replacement_parts.subtitle")}
           </p>
         </div>
 
@@ -103,7 +105,7 @@ export function ReplacementParts() {
 
                   {/* Action */}
                   <button className="inline-flex items-center gap-2 text-cyan-600 font-semibold text-sm hover:text-cyan-700 group/btn">
-                    Saiba mais
+                    {t("replacement_parts.saiba_mais")}
                     <span className="inline-block group-hover/btn:translate-x-1 transition-transform">→</span>
                   </button>
                 </div>
@@ -121,25 +123,24 @@ export function ReplacementParts() {
             {/* Content */}
             <div className="text-white">
               <h3 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-                Kit Completo de Reposição
+                {t("replacement_parts.featured_title")}
               </h3>
               <p className="text-cyan-50 text-lg leading-relaxed mb-6">
-                Pacote com todos os componentes de reposição mais solicitados. 
-                Perfeito para manutenção preventiva ou reparos de urgência.
+                {t("replacement_parts.featured_subtitle")}
               </p>
               
               <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-cyan-300" />
-                  <span>Motor + Cremalheira + Botão + Controle</span>
+                  <span>{t("replacement_parts.item_1")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-cyan-300" />
-                  <span>Frete grátis para compras acima de R$ 1.000</span>
+                  <span>{t("replacement_parts.item_2")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-cyan-300" />
-                  <span>Garantia de 12 meses em todos os itens</span>
+                  <span>{t("replacement_parts.item_3")}</span>
                 </div>
               </div>
 
@@ -148,7 +149,7 @@ export function ReplacementParts() {
                 className="bg-white text-cyan-700 hover:bg-gray-100 font-semibold gap-2"
               >
                 <ShoppingCart className="w-5 h-5" />
-                Comprar Agora
+                {t("replacement_parts.buy_now")}
               </Button>
             </div>
 

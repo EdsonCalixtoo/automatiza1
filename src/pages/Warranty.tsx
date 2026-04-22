@@ -1,7 +1,9 @@
 import { Layout } from "@/components/layout/Layout";
 import { Award, Check, AlertCircle, Clock, DollarSign } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Warranty() {
+  const { t } = useTranslation();
   return (
     <Layout>
       {/* Header */}
@@ -12,13 +14,13 @@ export default function Warranty() {
           <div className="max-w-3xl mx-auto space-y-4 animate-slide-up">
             <div className="inline-flex items-center justify-center gap-2 text-purple-600 font-semibold text-sm uppercase tracking-wider bg-purple-100/50 px-4 py-2 rounded-full border border-purple-200">
               <Award className="w-4 h-4" />
-              Garantia Completa
+              {t("warranty.badge")}
             </div>
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-gray-900">
-              Termo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-purple-700">Garantia</span>
+              {t("warranty.title_1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-purple-700">{t("warranty.title_2")}</span>
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Proteção total para seus produtos Automatiza
+              {t("warranty.subtitle")}
             </p>
           </div>
         </div>
@@ -35,7 +37,7 @@ export default function Warranty() {
                   <Award className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Cobertura de Garantia
+                  {t("warranty.coverage_title")}
                 </h2>
               </div>
               
@@ -46,22 +48,22 @@ export default function Warranty() {
                       12
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900">Meses de Garantia</h3>
-                      <p className="text-purple-900 text-sm">Para equipamentos novos</p>
+                      <h3 className="font-semibold text-lg text-gray-900">{t("warranty.months_title")}</h3>
+                      <p className="text-purple-900 text-sm">{t("warranty.new_equip")}</p>
                     </div>
                   </div>
                   <ul className="space-y-2 text-sm text-purple-900">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-purple-600" />
-                      Defeitos de fabricação
+                      {t("warranty.manufacturing_defects")}
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-purple-600" />
-                      Problemas eletrônicos
+                      {t("warranty.electronic_problems")}
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-purple-600" />
-                      Suporte técnico incluído
+                      {t("warranty.tech_support")}
                     </li>
                   </ul>
                 </div>
@@ -72,22 +74,22 @@ export default function Warranty() {
                       90
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900">Dias de Garantia</h3>
-                      <p className="text-orange-900 text-sm">Para consertos e reparos</p>
+                      <h3 className="font-semibold text-lg text-gray-900">{t("warranty.days_title")}</h3>
+                      <p className="text-orange-900 text-sm">{t("warranty.repairs")}</p>
                     </div>
                   </div>
                   <ul className="space-y-2 text-sm text-orange-900">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-orange-600" />
-                      Após conserto realizado
+                      {t("warranty.after_repair")}
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-orange-600" />
-                      Revisão completa
+                      {t("warranty.full_overhaul")}
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-orange-600" />
-                      Teste de funcionamento
+                      {t("warranty.functioning_test")}
                     </li>
                   </ul>
                 </div>
@@ -101,17 +103,17 @@ export default function Warranty() {
                   <Clock className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Contagem do Prazo
+                  {t("warranty.counting_title")}
                 </h2>
               </div>
               
               <div className="p-6 rounded-xl bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
                 <div className="space-y-4">
                   <p className="text-lg text-blue-900 leading-relaxed">
-                    Os prazos de garantia serão contados a partir da <span className="font-semibold">data de entrega da mercadoria</span> conforme expresso na Nota Fiscal.
+                    {t("warranty.counting_text")}
                   </p>
                   <div className="bg-white p-4 rounded-lg border border-blue-200">
-                    <p className="text-blue-900 text-sm"><span className="font-semibold">✓ Ativação:</span> A garantia será ativada quando o cliente comunicar o defeito expressamente (por escrito) dentro dos prazos assinalados.</p>
+                    <p className="text-blue-900 text-sm">{t("warranty.counting_activation")}</p>
                   </div>
                 </div>
               </div>
@@ -124,17 +126,17 @@ export default function Warranty() {
                   <AlertCircle className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Causas de Perda de Garantia
+                  {t("warranty.loss_title")}
                 </h2>
               </div>
               
               <div className="space-y-3">
                 {[
-                  "Defeito ocasionado por uso indevido ou desacordo com as características",
-                  "Alteração em placa, componentes ou tentativa de conserto não autorizado",
-                  "Etiqueta de identificação adulterada, rasurada ou ausente",
-                  "Instalação inadequada ou exposição a condições inadequadas",
-                  "Equipamentos de terceiros ligados sem autorização prévia"
+                  t("warranty.loss_item_1"),
+                  t("warranty.loss_item_2"),
+                  t("warranty.loss_item_3"),
+                  t("warranty.loss_item_4"),
+                  t("warranty.loss_item_5")
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 p-4 bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors">
                     <span className="text-red-600 font-bold flex-shrink-0">⚠</span>
@@ -147,16 +149,16 @@ export default function Warranty() {
             {/* Exclusões */}
             <div>
               <h3 className="font-heading text-2xl font-bold text-gray-900 mb-6">
-                Exclusões de Garantia
+                {t("warranty.exclusions_title")}
               </h3>
               
               <div className="space-y-3">
                 {[
-                  "Defeitos causados por descargas elétricas atmosféricas",
-                  "Lâmpadas, fusíveis, baterias e materiais de natureza semelhante",
-                  "Armazenamento inadequado, avarias de transporte, negligência ou abuso",
-                  "Defeitos por sinistros, acidentes ou agentes externos",
-                  "Equipamentos expostos a temperaturas acima de 40ºC"
+                  t("warranty.exclusion_item_1"),
+                  t("warranty.exclusion_item_2"),
+                  t("warranty.exclusion_item_3"),
+                  t("warranty.exclusion_item_4"),
+                  t("warranty.exclusion_item_5")
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                     <span className="text-gray-600 font-bold flex-shrink-0">•</span>
@@ -173,16 +175,16 @@ export default function Warranty() {
                   <Check className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Procedimento para Garantia
+                  {t("warranty.procedure_title")}
                 </h2>
               </div>
               
               <div className="space-y-4">
                 {[
-                  "Enviar laudo técnico com: nome, data da compra, número de série e descrição do problema",
-                  "Embalagem adequada da mercadoria (não desmontar)",
-                  "Envio com Nota Fiscal de remessa para conserto",
-                  "Manutenção ou substituição em aproximadamente 10 dias úteis"
+                  t("warranty.procedure_step_1"),
+                  t("warranty.procedure_step_2"),
+                  t("warranty.procedure_step_3"),
+                  t("warranty.procedure_step_4")
                 ].map((step, i) => (
                   <div key={i} className="flex gap-4 p-5 rounded-xl bg-white border border-cyan-200 hover:border-cyan-300 hover:shadow-md transition-all duration-300">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-600 to-cyan-700 text-white flex items-center justify-center font-bold flex-shrink-0">
@@ -201,9 +203,9 @@ export default function Warranty() {
               <div className="flex items-start gap-3">
                 <DollarSign className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-yellow-900 mb-2">Informações sobre Custos</p>
+                  <p className="font-semibold text-yellow-900 mb-2">{t("warranty.costs_title")}</p>
                   <p className="text-yellow-900 text-sm">
-                    As despesas de transporte (ida e volta) correm por conta do cliente. A garantia não inclui visitas aos locais de instalação para localização de problemas.
+                    {t("warranty.costs_text")}
                   </p>
                 </div>
               </div>

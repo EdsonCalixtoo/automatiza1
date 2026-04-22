@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Sparkles, Zap, Shield, ShoppingCart, Star } from "lucide-react";
 import { useProducts } from "@/contexts/ProductContext";
@@ -8,6 +9,11 @@ import { useState } from "react";
 import { CartNotification } from "@/components/cart/CartNotification";
 
 export function ProductsPreview() {
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
   const [addedProduct, setAddedProduct] = useState<{ id: string, name: string } | null>(null);
@@ -28,13 +34,13 @@ export function ProductsPreview() {
         <div className="text-center max-w-2xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 bg-cyan-50 border border-cyan-100 px-4 py-2 rounded-full mb-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
             <Sparkles className="w-4 h-4 text-cyan-600" />
-            <span className="text-xs font-bold text-cyan-700 uppercase tracking-widest">Tecnologia Automotiva</span>
+            <span className="text-xs font-bold text-cyan-700 uppercase tracking-widest">{t("home.featured_kits_badge")}</span>
           </div>
           <h2 className="font-heading text-5xl font-black text-gray-900 leading-tight">
-            Nossos <span className="text-cyan-600">Kits em Destaque</span>
+            {t("home.featured_kits_title").split(" ")[0]} <span className="text-cyan-600">{t("home.featured_kits_title").split(" ").slice(1).join(" ")}</span>
           </h2>
           <p className="text-lg text-gray-600 mt-4 font-medium">
-            Escolha a tecnologia certa para o seu dia a dia e automatize sua frota.
+            {t("home.featured_kits_subtitle")}
           </p>
         </div>
 
@@ -64,10 +70,10 @@ export function ProductsPreview() {
                 <div className="relative h-60 flex items-center justify-center overflow-hidden bg-gray-50 border-b border-gray-100">
                   <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                     <span className="bg-cyan-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
-                      {product.badge || 'Destaque'}
+                      {product.badge || t("home.more_details")}
                     </span>
                     <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-amber-950 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg flex items-center gap-1 border border-amber-400/50">
-                      <Star className="w-3 h-3 fill-amber-950" /> 10 ANOS
+                      <Star className="w-3 h-3 fill-amber-950" /> {t("hero.years")}
                     </span>
                   </div>
                   <img 
@@ -96,7 +102,7 @@ export function ProductsPreview() {
                       </span>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 animate-pulse">✨ Oferta de Aniversário</span>
+                      <span className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 animate-pulse">✨ {t("hero.anniversary")}</span>
                       <span className="font-heading text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-500">
                         {formatCurrency(product.price)}
                       </span>
@@ -119,11 +125,11 @@ export function ProductsPreview() {
                       className="w-full bg-slate-950 hover:bg-cyan-600 text-white font-black py-4 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-slate-900/10 active:scale-95"
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      COMPRAR AGORA
+                      {t("home.buy_now")}
                     </button>
-                    <Link to={`/produto/${product.id}`} className="w-full">
+                    <Link to={toL(`/produto/${product.id}`)} className="w-full">
                       <button className="w-full border-2 border-slate-100 text-slate-500 hover:border-cyan-100 hover:text-cyan-600 hover:bg-cyan-50 font-bold py-3 rounded-2xl text-[10px] transition-all duration-300 uppercase tracking-widest">
-                        Mais detalhes
+                        {t("home.more_details")}
                       </button>
                     </Link>
                   </div>
@@ -149,7 +155,7 @@ export function ProductsPreview() {
                 <div className="p-6 text-center">
                   <h3 className="font-bold text-gray-900">{product.name}</h3>
                   <p className="text-cyan-600 font-black text-2xl mt-2">{formatCurrency(product.price)}</p>
-                  <Link to={`/produto/${product.id}`} className="block mt-4 text-cyan-600 font-bold text-sm underline">Ver Produto</Link>
+                  <Link to={toL(`/produto/${product.id}`)} className="block mt-4 text-cyan-600 font-bold text-sm underline">{t("home.view_product")}</Link>
                 </div>
               </div>
             ))
@@ -157,9 +163,9 @@ export function ProductsPreview() {
         </div>
 
         <div className="text-center mt-16">
-          <Link to="/produtos">
+          <Link to={toL("/produtos")}>
             <Button className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white font-bold py-6 px-12 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300 group">
-              Ver Todos os Produtos
+              {t("home.all_products")}
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>

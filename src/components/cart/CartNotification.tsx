@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Check, ShoppingCart, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface CartNotificationProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface CartNotificationProps {
 }
 
 export function CartNotification({ isOpen, onClose, productName }: CartNotificationProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (!isOpen) return null;
@@ -33,10 +35,10 @@ export function CartNotification({ isOpen, onClose, productName }: CartNotificat
           </div>
           
           <h2 className="text-2xl font-black text-white uppercase tracking-tight">
-            Adicionado!
+            {t("common.added_excl")}
           </h2>
           <p className="text-cyan-100 text-sm font-medium mt-1 italic">
-            {productName || "Produto"} agora está no seu carrinho
+            {productName || t("common.product")} {t("common.now_in_cart")}
           </p>
         </div>
 
@@ -50,7 +52,7 @@ export function CartNotification({ isOpen, onClose, productName }: CartNotificat
             className="w-full h-16 bg-slate-900 hover:bg-cyan-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-all active:scale-95 group"
           >
             <ShoppingCart className="w-6 h-6" />
-            FINALIZAR COMPRA
+            {t("common.finish_purchase")}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
 
@@ -58,7 +60,7 @@ export function CartNotification({ isOpen, onClose, productName }: CartNotificat
             onClick={onClose}
             className="w-full h-14 border-2 border-slate-100 text-slate-500 hover:border-cyan-100 hover:text-cyan-600 hover:bg-cyan-50 font-bold rounded-2xl text-sm transition-all uppercase tracking-widest"
           >
-            Continuar Comprando
+            {t("common.continue_shopping")}
           </button>
         </div>
 
@@ -66,11 +68,11 @@ export function CartNotification({ isOpen, onClose, productName }: CartNotificat
         <div className="bg-slate-50 p-4 flex items-center justify-center gap-4 border-t border-slate-100">
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            Compra Segura
+            {t("common.secure_purchase")}
           </div>
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-            Envio Imediato
+            {t("common.immediate_shipping")}
           </div>
         </div>
       </div>

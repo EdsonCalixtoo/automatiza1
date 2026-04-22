@@ -1,7 +1,9 @@
 import { Layout } from "@/components/layout/Layout";
 import { Shield, Check, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Security() {
+  const { t } = useTranslation();
   return (
     <Layout>
       {/* Header */}
@@ -12,13 +14,13 @@ export default function Security() {
           <div className="max-w-3xl mx-auto space-y-4 animate-slide-up">
             <div className="inline-flex items-center justify-center gap-2 text-blue-600 font-semibold text-sm uppercase tracking-wider bg-blue-100/50 px-4 py-2 rounded-full border border-blue-200">
               <Lock className="w-4 h-4" />
-              Proteção Garantida
+              {t("security.badge")}
             </div>
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-gray-900">
-              Segurança <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700">de Dados</span>
+              {t("security.title_1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700">{t("security.title_2")}</span>
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Seus dados pessoais e transações estão protegidos com a mais alta segurança
+              {t("security.subtitle")}
             </p>
           </div>
         </div>
@@ -35,16 +37,16 @@ export default function Security() {
                   <Shield className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Proteção de Dados Pessoais
+                  {t("security.personal_data_title")}
                 </h2>
               </div>
               
               <div className="p-8 rounded-xl bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
                 <p className="text-lg text-blue-900 leading-relaxed mb-4">
-                  Com relação aos seus dados pessoais de endereçamento, pagamento e conteúdo do pedido, você pode estar certo de que <span className="font-semibold">não serão utilizados para outros fins</span> que não o de processamento dos pedidos realizados.
+                  {t("security.personal_data_text_1")}
                 </p>
                 <p className="text-lg text-blue-900 leading-relaxed">
-                  Seus dados <span className="font-semibold">não serão divulgados em hipótese alguma</span> a terceiros, garantindo sua privacidade total e proteção completa.
+                  {t("security.personal_data_text_2")}
                 </p>
               </div>
             </div>
@@ -56,26 +58,26 @@ export default function Security() {
                   <Lock className="w-7 h-7 text-white" />
                 </div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900">
-                  Criptografia SSL
+                  {t("security.ssl_title")}
                 </h2>
               </div>
               
               <div className="p-8 rounded-xl bg-cyan-50 border border-cyan-200 hover:border-cyan-300 transition-colors">
                 <p className="text-lg text-cyan-900 leading-relaxed mb-6">
-                  Toda transação que envolver pagamento, seja por cartão de crédito ou não, estará <span className="font-semibold">encriptada com a tecnologia SSL (Secure Socket Layer)</span>.
+                  {t("security.ssl_text")}
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3 p-4 bg-white rounded-lg border border-cyan-100">
                     <Check className="w-5 h-5 text-cyan-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-cyan-900"><span className="font-semibold">Criptografia de ponta a ponta</span> - Seus dados viajam protegidos</span>
+                    <span className="text-cyan-900">{t("security.ssl_item_1")}</span>
                   </li>
                   <li className="flex items-start gap-3 p-4 bg-white rounded-lg border border-cyan-100">
                     <Check className="w-5 h-5 text-cyan-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-cyan-900"><span className="font-semibold">Acesso exclusivo</span> - Apenas nossa empresa tem acesso aos seus dados</span>
+                    <span className="text-cyan-900">{t("security.ssl_item_2")}</span>
                   </li>
                   <li className="flex items-start gap-3 p-4 bg-white rounded-lg border border-cyan-100">
                     <Check className="w-5 h-5 text-cyan-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-cyan-900"><span className="font-semibold">Certificado SSL válido</span> - Protocolo HTTPS ativo em toda a plataforma</span>
+                    <span className="text-cyan-900">{t("security.ssl_item_3")}</span>
                   </li>
                 </ul>
               </div>
@@ -85,10 +87,10 @@ export default function Security() {
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
               <h3 className="font-heading text-2xl font-bold mb-4 flex items-center gap-2">
                 <Shield className="w-6 h-6" />
-                Sua Segurança é Nossa Prioridade
+                {t("security.summary_title")}
               </h3>
               <p className="text-blue-50 leading-relaxed">
-                Investimos continuamente em segurança de dados e infraestrutura para garantir que sua experiência de compra seja segura, confiável e protegida em todos os momentos.
+                {t("security.summary_text")}
               </p>
             </div>
           </div>

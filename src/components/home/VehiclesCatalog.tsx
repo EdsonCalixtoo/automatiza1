@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 import vehicleImage from "/ftproduto.jpeg";
 import { BRAND_LOGOS } from "@/data/brandLogos";
 
@@ -12,74 +14,79 @@ interface Vehicle {
   link?: string;
 }
 
-const vehicles: Vehicle[] = [
+const getVehicles = (t: any) => [
   {
     id: "iveco-daily",
     name: "IVECO DAILY",
     image: vehicleImage,
-    description: "Furgão compacto e versátil para entregas urbanas",
+    description: t("vehicles_catalog.vehicles.iveco"),
     link: "/produtos?vehicle=iveco-daily"
   },
   {
     id: "peugeot-boxer",
     name: "PEUGEOT BOXER",
     image: vehicleImage,
-    description: "Van profissional com amplo espaço de carga",
+    description: t("vehicles_catalog.vehicles.peugeot"),
     link: "/produtos?vehicle=peugeot-boxer"
   },
   {
     id: "ford-transit",
     name: "FORD TRANSIT",
     image: vehicleImage,
-    description: "Referência em transporte de passageiros",
+    description: t("vehicles_catalog.vehicles.ford"),
     link: "/produtos?vehicle=ford-transit"
   },
   {
     id: "citroen-jumper",
     name: "CITROËN JUMPER",
     image: vehicleImage,
-    description: "Eficiência e conforto para sua frota",
+    description: t("vehicles_catalog.vehicles.citroen"),
     link: "/produtos?vehicle=citroen-jumper"
   },
   {
     id: "vw-kombi",
     name: "VOLKSWAGEN KOMBI",
     image: vehicleImage,
-    description: "Clássico que nunca sai de moda",
+    description: t("vehicles_catalog.vehicles.vw"),
     link: "/produtos?vehicle=vw-kombi"
   },
   {
     id: "kia-besta",
     name: "KIA BESTA",
     image: vehicleImage,
-    description: "Confiabilidade asiática em preço acessível",
+    description: t("vehicles_catalog.vehicles.kia"),
     link: "/produtos?vehicle=kia-besta"
   },
   {
     id: "mercedes-sprinter",
     name: "MERCEDES SPRINTER",
     image: vehicleImage,
-    description: "Luxo e desempenho para transportes premium",
+    description: t("vehicles_catalog.vehicles.mercedes"),
     link: "/produtos?vehicle=mercedes-sprinter"
   },
   {
     id: "fiat-ducato",
     name: "FIAT DUCATO",
     image: vehicleImage,
-    description: "Potência e durabilidade italiana",
+    description: t("vehicles_catalog.vehicles.fiat"),
     link: "/produtos?vehicle=fiat-ducato"
   },
   {
     id: "renault-master",
     name: "RENAULT MASTER",
     image: vehicleImage,
-    description: "Líder em transportes comerciais",
+    description: t("vehicles_catalog.vehicles.renault"),
     link: "/produtos?vehicle=renault-master"
   },
 ];
 
 export function VehiclesCatalog() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+  const vehicles = getVehicles(t);
 
   return (
     <section className="py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
@@ -91,14 +98,13 @@ export function VehiclesCatalog() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4 text-gray-900">
-            Compatível com os principais
+            {t("vehicles_catalog.title_part1")}
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-500">
-              Modelos de Vans do Brasil
+              {t("vehicles_catalog.title_part2")}
             </span>
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Nosso sistema de automação funciona com praticamente todos os modelos de vans comerciais. 
-            Confira qual é o seu veículo abaixo.
+            {t("vehicles_catalog.subtitle")}
           </p>
         </div>
 
@@ -139,7 +145,7 @@ export function VehiclesCatalog() {
 
                 {/* Badge */}
                 <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                  <span className="text-white text-xs font-semibold uppercase tracking-wider">Em Stock</span>
+                  <span className="text-white text-xs font-semibold uppercase tracking-wider">{t("vehicles_catalog.in_stock")}</span>
                 </div>
 
                 {/* Hover overlay */}
@@ -157,12 +163,12 @@ export function VehiclesCatalog() {
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <a href={vehicle.link} className="flex-1">
+                  <a href={vehicle.link ? toL(vehicle.link) : "#"} className="flex-1">
                     <Button 
                       variant="default"
                       className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white group/btn rounded-xl font-semibold"
                     >
-                      Ver Detalhes
+                      {t("vehicles_catalog.ver_detalhes")}
                     </Button>
                   </a>
                   <button className="p-3 rounded-xl border-2 border-gray-200 hover:bg-gray-50 hover:border-cyan-400 transition-all duration-300 flex items-center justify-center">
@@ -180,14 +186,14 @@ export function VehiclesCatalog() {
         {/* CTA */}
         <div className="mt-16 text-center">
           <p className="text-gray-600 mb-6">
-            Não encontrou seu modelo? Converse conosco!
+            {t("vehicles_catalog.not_found")}
           </p>
           <a href="https://wa.me/5519989429972" target="_blank" rel="noopener noreferrer">
             <Button 
               size="lg"
               className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-10 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Falar com Especialista
+              {t("vehicles_catalog.falar_especialista")}
             </Button>
           </a>
         </div>

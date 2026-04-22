@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface Order {
   id: string;
@@ -41,25 +42,26 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusLabel = (status: string) => {
+const getStatusLabel = (status: string, t: any) => {
   switch (status) {
     case "pendente":
-      return "🕐 Aguardando Pagamento";
+      return `🕐 ${t("customer_area.status_waiting")}`;
     case "pago":
     case "confirmado":
-      return "✅ Pagamento Aprovado";
+      return `✅ ${t("customer_area.status_paid")}`;
     case "enviado":
-      return "📦 Produto Enviado";
+      return `📦 ${t("customer_area.status_shipped")}`;
     case "entregue":
-      return "🎉 Entregue";
+      return `🎉 ${t("customer_area.status_delivered")}`;
     case "cancelado":
-      return "❌ Cancelado";
+      return `❌ ${t("customer_area.status_canceled")}`;
     default:
       return status;
   }
 };
 
 export default function CustomerArea() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
@@ -147,15 +149,15 @@ export default function CustomerArea() {
   const handleSaveProfile = () => {
     // Validar campos obrigatórios
     if (!editData.name.trim()) {
-      alert("Por favor, preencha o nome completo!");
+      alert(t("customer_area.alert_fill_name"));
       return;
     }
     if (!editData.phone.trim()) {
-      alert("Por favor, preencha o telefone!");
+      alert(t("customer_area.alert_fill_phone"));
       return;
     }
     if (!editData.cpf.trim()) {
-      alert("Por favor, preencha o CPF!");
+      alert(t("customer_area.alert_fill_cpf"));
       return;
     }
 
@@ -163,7 +165,7 @@ export default function CustomerArea() {
     setCustomer(editData);
     localStorage.setItem(`customer_${user?.id}`, JSON.stringify(editData));
     setIsEditing(false);
-    alert("Perfil atualizado com sucesso!");
+    alert(t("customer_area.alert_success"));
   };
 
   // Gerar HTML do documento do pedido
@@ -419,67 +421,67 @@ export default function CustomerArea() {
   <div class="container">
     <div class="header">
       <div class="logo">📦</div>
-      <h1>Detalhes do Pedido</h1>
-      <p>${type === "financeiro" ? "Nota Fiscal Eletrônica" : "Documento de Produção"}</p>
+      <h1>${t("customer_area.order_details_title")}</h1>
+      <p>${type === "financeiro" ? t("customer_area.nfe_electronic") : t("customer_area.production_doc")}</p>
     </div>
     
     <div class="content">
       <div class="badge-container">
-        <div class="badge badge-order">Pedido #${order.id.slice(0, 8)}</div>
+        <div class="badge badge-order">${t("track_order.order_number")} #${order.id.slice(0, 8)}</div>
         <div class="badge badge-status">${order.status.toUpperCase()}</div>
-        <div class="badge badge-type">${type === "financeiro" ? "Financeiro" : "Produção"}</div>
+        <div class="badge badge-type">${type === "financeiro" ? t("customer_area.financial") : t("customer_area.production")}</div>
       </div>
       
       <div class="info-grid">
         <div class="info-section">
-          <h3>Informações do Cliente</h3>
+          <h3>${t("customer_area.customer_info")}</h3>
           <div class="info-item">
-            <label>Nome</label>
+            <label>${t("customer_area.name_label")}</label>
             <value>${order.customer.name}</value>
           </div>
           <div class="info-item">
-            <label>Email</label>
+            <label>${t("customer_area.email_label")}</label>
             <value>${order.customer.email}</value>
           </div>
           <div class="info-item">
-            <label>Telefone</label>
+            <label>${t("customer_area.phone_label")}</label>
             <value>${order.customer.phone}</value>
           </div>
         </div>
         
         <div class="info-section">
-          <h3>Detalhes do Pedido</h3>
+          <h3>${t("customer_area.order_info")}</h3>
           <div class="info-item">
-            <label>Data do Pedido</label>
-            <value>${new Date(order.date).toLocaleDateString("pt-BR")}</value>
+            <label>${t("customer_area.order_date")}</label>
+            <value>${new Date(order.date).toLocaleDateString(i18n.language)}</value>
           </div>
           <div class="info-item">
-            <label>Horário</label>
-            <value>${new Date(order.date).toLocaleTimeString("pt-BR")}</value>
+            <label>${t("customer_area.order_time")}</label>
+            <value>${new Date(order.date).toLocaleTimeString(i18n.language)}</value>
           </div>
           <div class="info-item">
-            <label>Método de Pagamento</label>
-            <value>${order.paymentMethod === "pix" ? "🔐 PIX" : "💳 Cartão"}</value>
+            <label>${t("customer_area.payment_method")}</label>
+            <value>${order.paymentMethod === "pix" ? `🔐 ${t("customer_area.pix")}` : `💳 ${t("customer_area.card")}`}</value>
           </div>
         </div>
       </div>
       
       <div class="items-section">
-        <h3>Produtos do Pedido</h3>
+        <h3>${t("track_order.order_items")}</h3>
         <table class="items-table">
           <thead>
             <tr>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Quantidade</th>
-              ${type === "financeiro" ? "<th>Preço Unit.</th><th>Subtotal</th>" : ""}
+              <th>${t("customer_area.product_header")}</th>
+              <th>${t("customer_area.category_header")}</th>
+              <th>${t("customer_area.quantity_header")}</th>
+              ${type === "financeiro" ? `<th>${t("customer_area.unit_price_header")}</th><th>${t("customer_area.subtotal_header")}</th>` : ""}
             </tr>
           </thead>
           <tbody>
             ${order.items.map((item, idx) => `
               <tr>
                 <td><strong>${idx + 1}. ${item.name}</strong></td>
-                <td>${item.category || "Sem categoria"}</td>
+                <td>${item.category || t("customer_area.no_category")}</td>
                 <td>${item.quantity}x</td>
                 ${type === "financeiro" ? `
                   <td>${formatCurrency(item.price)}</td>
@@ -494,11 +496,11 @@ export default function CustomerArea() {
       ${type === "financeiro" ? `
         <div class="summary">
           <div class="summary-item">
-            <label>Total de Itens:</label>
-            <value>${order.items.length} produto${order.items.length > 1 ? "s" : ""}</value>
+            <label>${t("customer_area.summary_total_items")}</label>
+            <value>${order.items.length} ${order.items.length > 1 ? t("customer_area.summary_products") : t("customer_area.summary_product")}</value>
           </div>
           <div class="summary-item total">
-            <label>VALOR TOTAL:</label>
+            <label>${t("customer_area.summary_total_value")}</label>
             <value>${formatCurrency(order.total)}</value>
           </div>
         </div>
@@ -506,7 +508,7 @@ export default function CustomerArea() {
     </div>
     
     <div class="footer">
-      <p>Documento gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}</p>
+      <p>${t("customer_area.document_generated_at")} ${new Date().toLocaleDateString(i18n.language)} ${t("customer_area.document_at")} ${new Date().toLocaleTimeString(i18n.language)}</p>
     </div>
   </div>
   
@@ -542,21 +544,21 @@ export default function CustomerArea() {
           {/* Header */}
           <div className="mb-8">
             <Link
-              to="/"
+              to={toL("/")}
               className="inline-flex items-center gap-2 text-cyan-600 hover:text-cyan-700 font-semibold mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voltar
+              {t("common.back")}
             </Link>
             <div className="flex items-center justify-between">
-              <h1 className="text-4xl font-bold text-gray-900">Minha Conta</h1>
+              <h1 className="text-4xl font-bold text-gray-900">{t("customer_area.title")}</h1>
               <Button
                 onClick={handleLogout}
                 variant="outline"
                 className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                {t("customer_area.logout")}
               </Button>
             </div>
           </div>
@@ -570,12 +572,12 @@ export default function CustomerArea() {
                     <User className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="font-bold text-gray-900">
-                    {customer.name || "Usuário"}
+                    {customer.name || t("customer_area.user")}
                   </h2>
                   <p className="text-sm text-gray-600">{customer.email}</p>
                   {!customer.name && (
                     <p className="text-xs text-amber-600 mt-2 bg-amber-50 px-2 py-1 rounded">
-                      ⚠️ Preencha seu perfil
+                      ⚠️ {t("customer_area.fill_profile")}
                     </p>
                   )}
                 </div>
@@ -590,7 +592,7 @@ export default function CustomerArea() {
                     }`}
                   >
                     <Package className="w-5 h-5" />
-                    Meus Pedidos
+                    {t("customer_area.sidebar_orders")}
                   </button>
                   <button
                     onClick={() => setActiveTab("profile")}
@@ -601,7 +603,7 @@ export default function CustomerArea() {
                     }`}
                   >
                     <User className="w-5 h-5" />
-                    Perfil
+                    {t("customer_area.sidebar_profile")}
                   </button>
                 </div>
               </div>
@@ -614,21 +616,21 @@ export default function CustomerArea() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-3 gap-4 mb-8">
                     <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-lg">
-                      <p className="text-sm text-gray-600 mb-1">Total de Pedidos</p>
+                      <p className="text-sm text-gray-600 mb-1">{t("customer_area.total_orders")}</p>
                       <p className="text-3xl font-bold text-cyan-600">
                         {orders.length}
                       </p>
                     </div>
                     <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-lg">
-                      <p className="text-sm text-gray-600 mb-1">Gasto Total</p>
+                      <p className="text-sm text-gray-600 mb-1">{t("customer_area.total_spent")}</p>
                       <p className="text-3xl font-bold text-cyan-600">
                         {formatCurrency(totalSpent)}
                       </p>
                     </div>
                     <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-lg">
-                      <p className="text-sm text-gray-600 mb-1">Status</p>
+                      <p className="text-sm text-gray-600 mb-1">{t("customer_area.status_label")}</p>
                       <p className="text-sm font-bold text-cyan-600">
-                        {customer.name ? "✅ Perfil Completo" : "⚠️ Perfil Incompleto"}
+                        {customer.name ? `✅ ${t("customer_area.profile_complete")}` : `⚠️ ${t("customer_area.profile_incomplete")}`}
                       </p>
                     </div>
                   </div>
@@ -637,15 +639,14 @@ export default function CustomerArea() {
                     <div className="bg-white rounded-xl border-2 border-gray-200 p-12 text-center shadow-lg">
                       <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        Nenhum pedido ainda
+                        {t("customer_area.no_orders_title")}
                       </h3>
                       <p className="text-gray-600 mb-6">
-                        Você ainda não realizou nenhuma compra. Visite nossa loja
-                        agora!
+                        {t("customer_area.no_orders_desc")}
                       </p>
-                      <Link to="/produtos">
+                      <Link to={toL("/produtos")}>
                         <Button className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-8 py-3 rounded-xl">
-                          Ir para Loja
+                          {t("customer_area.go_to_store")}
                         </Button>
                       </Link>
                     </div>
@@ -662,7 +663,7 @@ export default function CustomerArea() {
                                 {order.id}
                               </h3>
                               <p className="text-sm text-gray-600">
-                                {new Date(order.date).toLocaleDateString("pt-BR", {
+                                {new Date(order.date).toLocaleDateString(i18n.language, {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
@@ -681,7 +682,7 @@ export default function CustomerArea() {
                                   order.status
                                 )}`}
                               >
-                                {getStatusLabel(order.status)}
+                                {getStatusLabel(order.status, t)}
                               </span>
                             </div>
                           </div>
@@ -712,13 +713,13 @@ export default function CustomerArea() {
                           <div className="flex gap-3">
                             <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-cyan-600 text-cyan-600 hover:bg-cyan-50 font-semibold transition-colors">
                               <Eye className="w-4 h-4" />
-                              Ver Detalhes
+                              {t("customer_area.view_details")}
                             </button>
                             <button 
                               onClick={() => setShowDownloadModal(order.id)}
                               className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-green-300 text-green-700 hover:bg-green-50 font-semibold transition-colors">
                               <Download className="w-4 h-4" />
-                              Baixar NF-e
+                              {t("customer_area.download_nfe")}
                             </button>
                           </div>
                         </div>
@@ -732,14 +733,14 @@ export default function CustomerArea() {
               {activeTab === "profile" && (
                 <div className="bg-white rounded-xl border-2 border-gray-200 p-8 shadow-lg">
                   <h2 className="text-2xl font-bold text-gray-900 mb-8">
-                    Informações Pessoais
+                    {t("customer_area.personal_info")}
                   </h2>
 
                   <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
-                          Nome Completo
+                          {t("customer_area.name_label")}
                         </label>
                         {isEditing ? (
                           <input
@@ -748,29 +749,29 @@ export default function CustomerArea() {
                             onChange={(e) =>
                               setEditData({ ...editData, name: e.target.value })
                             }
-                            placeholder="Digite seu nome"
+                            placeholder={t("customer_area.name_placeholder")}
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-cyan-600 focus:outline-none"
                           />
                         ) : (
                           <div className="px-4 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 font-semibold">
-                            {customer.name || "Não preenchido"}
+                            {customer.name || t("customer_area.fill_profile")}
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
-                          Email
+                          {t("customer_area.email_label")}
                         </label>
                         <div className="px-4 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 font-semibold cursor-not-allowed">
                           {customer.email}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Email não pode ser alterado</p>
+                        <p className="text-xs text-gray-500 mt-1">{t("customer_area.email_immutable")}</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
-                          Telefone
+                          {t("customer_area.phone_label")}
                         </label>
                         {isEditing ? (
                           <input
@@ -784,14 +785,14 @@ export default function CustomerArea() {
                           />
                         ) : (
                           <div className="px-4 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 font-semibold">
-                            {customer.phone || "Não preenchido"}
+                            {customer.phone || t("customer_area.fill_profile")}
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
-                          CPF
+                          {t("customer_area.cpf_label")}
                         </label>
                         {isEditing ? (
                           <input
@@ -805,7 +806,7 @@ export default function CustomerArea() {
                           />
                         ) : (
                           <div className="px-4 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-900 font-semibold">
-                            {customer.cpf || "Não preenchido"}
+                            {customer.cpf || t("customer_area.fill_profile")}
                           </div>
                         )}
                       </div>
@@ -822,7 +823,7 @@ export default function CustomerArea() {
                             className="border-cyan-600 text-cyan-600 hover:bg-cyan-50"
                             variant="outline"
                           >
-                            ✏️ Editar Perfil
+                            ✏️ {t("customer_area.edit_profile")}
                           </Button>
                         ) : (
                           <>
@@ -830,7 +831,7 @@ export default function CustomerArea() {
                               onClick={handleSaveProfile}
                               className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white"
                             >
-                              ✅ Salvar Alterações
+                              ✅ {t("customer_area.save_changes")}
                             </Button>
                             <Button
                               onClick={() => {
@@ -840,7 +841,7 @@ export default function CustomerArea() {
                               variant="outline"
                               className="border-gray-300 text-gray-700 hover:bg-gray-50"
                             >
-                              ❌ Cancelar
+                              ❌ {t("customer_area.cancel")}
                             </Button>
                           </>
                         )}
@@ -859,9 +860,9 @@ export default function CustomerArea() {
             <div className="bg-white rounded-2xl border border-gray-200 max-w-md w-full shadow-2xl">
               <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 border-b border-gray-200">
                 <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                  <span>📄</span> Escolha o Documento
+                  <span>📄</span> {t("customer_area.modal_title")}
                 </h3>
-                <p className="text-green-100 text-sm mt-1">Qual documento deseja baixar?</p>
+                <p className="text-green-100 text-sm mt-1">{t("customer_area.modal_subtitle")}</p>
               </div>
 
               <div className="p-6 space-y-4">
@@ -876,9 +877,9 @@ export default function CustomerArea() {
                   <div className="flex items-start gap-4">
                     <div className="text-2xl">💰</div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 group-hover:text-green-700 transition">Nota Fiscal Eletrônica</h4>
+                      <h4 className="font-bold text-gray-900 group-hover:text-green-700 transition">{t("customer_area.nfe_title")}</h4>
                       <p className="text-sm text-gray-600 mt-1">
-                        Documento completo com todos os valores e impostos.
+                        {t("customer_area.nfe_desc")}
                       </p>
                     </div>
                     <div className="text-xl text-green-600 opacity-0 group-hover:opacity-100 transition">→</div>
@@ -896,9 +897,9 @@ export default function CustomerArea() {
                   <div className="flex items-start gap-4">
                     <div className="text-2xl">📋</div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition">Recibo de Pedido</h4>
+                      <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition">{t("customer_area.receipt_title")}</h4>
                       <p className="text-sm text-gray-600 mt-1">
-                        Lista simples de produtos e quantidades do pedido.
+                        {t("customer_area.receipt_desc")}
                       </p>
                     </div>
                     <div className="text-xl text-blue-600 opacity-0 group-hover:opacity-100 transition">→</div>
@@ -910,12 +911,12 @@ export default function CustomerArea() {
                   onClick={() => setShowDownloadModal(null)}
                   className="w-full mt-4 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium transition-all duration-300"
                 >
-                  ❌ Cancelar
+                  ❌ {t("customer_area.cancel")}
                 </button>
               </div>
 
               <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center text-xs text-gray-600">
-                O documento abrirá em uma nova aba para visualização ou impressão
+                {t("customer_area.modal_footer")}
               </div>
             </div>
           </div>

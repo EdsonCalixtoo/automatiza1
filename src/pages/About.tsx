@@ -1,8 +1,10 @@
 import { Layout } from "@/components/layout/Layout";
 import { Target, Eye, Users, Award, Wrench, Heart, Zap, CheckCircle2, ShieldCheck } from "lucide-react";
 import { CTA } from "@/components/home/CTA";
+import { useTranslation } from "react-i18next";
 
 const About = () => {
+  const { t } = useTranslation();
   return (
     <Layout>
       {/* Header */}
@@ -14,16 +16,16 @@ const About = () => {
           <div className="max-w-3xl mx-auto text-center space-y-6 animate-slide-up">
             <div className="inline-flex items-center justify-center gap-2 text-cyan-600 font-semibold text-sm uppercase tracking-wider mb-4 bg-cyan-100/50 px-4 py-2 rounded-full border border-cyan-200">
               <span className="w-2 h-2 rounded-full bg-cyan-600" />
-              Tecnologia brasileira
+              {t("about.badge")}
             </div>
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              A <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-700">AUTOMATIZA</span>
+              {t("about.title_1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-700">{t("about.title_2")}</span>
             </h1>
             <p className="text-2xl text-cyan-600 font-semibold italic">
-              "Tecnologia brasileira que transforma o transporte de passageiros"
+              {t("about.motto")}
             </p>
             <p className="text-lg text-gray-700 leading-relaxed mx-auto max-w-2xl">
-              Especializada no desenvolvimento de sistemas de automação para portas de vans e veículos utilitários.
+              {t("about.subtitle")}
             </p>
           </div>
         </div>
@@ -37,18 +39,18 @@ const About = () => {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-10 bg-gradient-to-b from-cyan-600 to-cyan-700" />
                 <h2 className="font-heading text-4xl font-bold text-gray-900">
-                  Nossa Missão
+                  {t("about.mission_title")}
                 </h2>
               </div>
               <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
                 <p>
-                  A <span className="font-semibold text-cyan-600">AUTOMATIZA</span> é uma empresa brasileira especializada no desenvolvimento de sistemas de automação para portas de vans e veículos utilitários. Nossa missão é levar tecnologia, segurança e praticidade para quem vive diariamente na estrada, oferecendo soluções confiáveis que facilitam a rotina de motoristas e empresas de transporte em todo o país. 🚐⚙️
+                  {t("about.mission_text_1")}
                 </p>
                 <p>
-                  Desde o início, a AUTOMATIZA nasceu com um propósito claro: modernizar o acesso de passageiros aos veículos de transporte, eliminando o esforço repetitivo de abrir e fechar portas manualmente e trazendo mais conforto para motoristas e usuários.
+                  {t("about.mission_text_2")}
                 </p>
                 <p className="text-xl font-semibold text-cyan-600 italic pt-4 border-l-4 border-cyan-600 pl-4">
-                  "Abrindo portas para um transporte mais inteligente."
+                  {t("about.mission_quote")}
                 </p>
               </div>
             </div>
@@ -57,26 +59,26 @@ const About = () => {
             <div className="mt-20 space-y-12">
               <div className="text-center space-y-4">
                 <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">
-                  Inovação aplicada ao <span className="text-cyan-600">dia a dia</span>
+                  {t("about.innovation_title")} <span className="text-cyan-600">{t("about.innovation_accent")}</span>
                 </h2>
                 <p className="text-gray-600 max-w-2xl mx-auto">
-                  Na AUTOMATIZA, acreditamos que inovação só faz sentido quando resolve problemas reais.
+                  {t("about.innovation_subtitle")}
                 </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="space-y-6">
                   <p className="text-gray-700 leading-relaxed">
-                    Desenvolvemos sistemas de automação pensados para o uso diário em veículos que operam intensamente, como vans escolares, transporte executivo, turismo e frotas corporativas.
+                    {t("about.innovation_text")}
                   </p>
                   <div className="space-y-3">
-                    <h4 className="font-bold text-gray-900 uppercase text-sm tracking-widest">Nossos produtos oferecem:</h4>
+                    <h4 className="font-bold text-gray-900 uppercase text-sm tracking-widest">{t("about.innovation_list_title")}</h4>
                     {[
-                      "Abertura e fechamento automático da porta",
-                      "Maior segurança no embarque e desembarque",
-                      "Redução do desgaste mecânico da porta",
-                      "Mais praticidade para o motorista",
-                      "Confiabilidade no uso contínuo"
+                      t("about.innovation_item_1"),
+                      t("about.innovation_item_2"),
+                      t("about.innovation_item_3"),
+                      t("about.innovation_item_4"),
+                      t("about.innovation_item_5")
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 bg-cyan-50 p-3 rounded-xl border border-cyan-100 group hover:border-cyan-300 transition-all">
                         <CheckCircle2 className="w-5 h-5 text-cyan-600" />
@@ -92,7 +94,7 @@ const About = () => {
                       <Zap className="w-8 h-8 text-white" />
                     </div>
                     <p className="text-gray-700 leading-relaxed font-medium">
-                      Cada sistema é desenvolvido com foco em durabilidade, eficiência e facilidade de instalação, garantindo uma experiência superior para nossos clientes.
+                      {t("about.innovation_card_text")}
                     </p>
                   </div>
                 </div>
@@ -109,14 +111,14 @@ const About = () => {
           <div className="max-w-4xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
-                <span className="text-cyan-400 font-bold uppercase tracking-widest text-sm">Engenharia e Qualidade</span>
-                <h2 className="font-heading text-4xl font-bold">Tecnologia e <span className="text-cyan-400">Qualidade</span></h2>
+                <span className="text-cyan-400 font-bold uppercase tracking-widest text-sm">{t("about.engineering_badge")}</span>
+                <h2 className="font-heading text-4xl font-bold">{t("about.engineering_title")} <span className="text-cyan-400">{t("about.engineering_accent")}</span></h2>
                 <p className="text-gray-400 leading-relaxed">
-                  A AUTOMATIZA trabalha constantemente no aperfeiçoamento de seus produtos, buscando unir engenharia, tecnologia e experiência prática de mercado para entregar soluções que realmente funcionam no dia a dia do transporte de passageiros.
+                  {t("about.engineering_text")}
                 </p>
               </div>
               <div className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 space-y-6">
-                <h3 className="font-bold text-xl text-cyan-400">Modelos Atendidos:</h3>
+                <h3 className="font-bold text-xl text-cyan-400">{t("about.models_title")}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     "Mercedes Sprinter",
@@ -134,7 +136,7 @@ const About = () => {
                   ))}
                 </div>
                 <p className="text-sm text-gray-500 pt-4 border-t border-white/10">
-                  Variedade que atende tanto motoristas autônomos quanto empresas com grandes frotas.
+                  {t("about.models_footer")}
                 </p>
               </div>
             </div>
@@ -150,22 +152,22 @@ const About = () => {
               <ShieldCheck className="w-10 h-10 text-cyan-600" />
             </div>
             <h2 className="font-heading text-4xl font-bold text-gray-900">
-              Compromisso com quem <span className="text-cyan-600">vive na estrada</span>
+              {t("about.commitment_title")} <span className="text-cyan-600">{t("about.commitment_accent")}</span>
             </h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Mais do que desenvolver produtos, a AUTOMATIZA busca construir relações de confiança com seus clientes. Sabemos que quem trabalha com transporte precisa de soluções que não podem falhar.
+                {t("about.commitment_text_1")}
               </p>
               <p>
-                Por isso, cada sistema é pensado para entregar desempenho consistente, segurança e tranquilidade no uso diário. Nosso compromisso é continuar evoluindo, investindo em tecnologia e desenvolvendo soluções que tornem o transporte de passageiros mais moderno, eficiente e confortável.
+                {t("about.commitment_text_2")}
               </p>
             </div>
             
             <div className="pt-12 grid sm:grid-cols-3 gap-8">
               {[
-                { icon: Users, label: "Confiança", desc: "Relações duradouras" },
-                { icon: Award, label: "Excelência", desc: "Qualidade garantida" },
-                { icon: Target, label: "Evolução", desc: "Foco no futuro" }
+                { icon: Users, label: t("about.trust"), desc: t("about.trust_desc") },
+                { icon: Award, label: t("about.excellence"), desc: t("about.excellence_desc") },
+                { icon: Target, label: t("about.evolution"), desc: t("about.evolution_desc") }
               ].map((item, i) => (
                 <div key={i} className="space-y-2">
                   <div className="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center mx-auto mb-4">

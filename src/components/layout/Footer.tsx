@@ -1,7 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, Youtube } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+
   return (
     <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white relative overflow-hidden">
       {/* Background decoration */}
@@ -19,52 +25,51 @@ export function Footer() {
               alt="Automatiza VANS" 
               className="h-16 w-auto opacity-90 rounded-xl"
             />
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Transformamos portas manuais em automáticas, proporcionando conforto, 
-              praticidade e modernidade para sua van.
+             <p className="text-gray-400 text-sm leading-relaxed">
+              {t("footer.description")}
             </p>
           </div>
 
           {/* Links Rápidos */}
           <div className="space-y-4">
-            <h4 className="font-heading font-semibold text-lg text-white">Links Rápidos</h4>
+            <h4 className="font-heading font-semibold text-lg text-white">{t("footer.quick_links")}</h4>
             <nav className="flex flex-col gap-2">
-              <Link to="/" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Início
+              <Link to={toL("/")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("header.home")}
               </Link>
-              <Link to="/produtos" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Produtos
+              <Link to={toL("/produtos")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("header.products")}
               </Link>
-              <Link to="/sobre" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Sobre Nós
+              <Link to={toL("/sobre")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("header.about")}
               </Link>
-              <Link to="/contato" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Contato
+              <Link to={toL("/contato")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("header.contact")}
               </Link>
-              <Link to="/seguranca" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Segurança
+              <Link to={toL("/seguranca")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.security")}
               </Link>
-              <Link to="/envio" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Envio
+              <Link to={toL("/envio")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.shipping")}
               </Link>
-              <Link to="/garantia" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Garantia
+              <Link to={toL("/garantia")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.warranty")}
               </Link>
-              <Link to="/como-comprar" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Como Comprar
+              <Link to={toL("/como-comprar")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.how_to_buy")}
               </Link>
-              <Link to="/trocas-devolucoes" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Trocas e Devoluções
+              <Link to={toL("/trocas-devolucoes")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.returns")}
               </Link>
-              <Link to="/videos-instalacao" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Vídeos de Instalação
+              <Link to={toL("/videos-instalacao")} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                {t("info.installation_videos")}
               </Link>
             </nav>
           </div>
 
           {/* Contato */}
           <div className="space-y-4">
-            <h4 className="font-heading font-semibold text-lg text-white">Contato</h4>
+            <h4 className="font-heading font-semibold text-lg text-white">{t("header.contact")}</h4>
             <div className="space-y-3">
               <a 
                 href="https://wa.me/5519989429972" 
@@ -89,7 +94,7 @@ export function Footer() {
 
           {/* Social */}
           <div className="space-y-4">
-            <h4 className="font-heading font-semibold text-lg text-white">Redes Sociais</h4>
+            <h4 className="font-heading font-semibold text-lg text-white">{t("footer.social")}</h4>
             <div className="flex gap-3">
               <a 
                 href="https://www.instagram.com/automatiza_vans" 
@@ -111,17 +116,17 @@ export function Footer() {
               </a>
             </div>
             <p className="text-gray-400 text-sm">
-              Siga-nos para novidades e dicas!
+              {t("footer.follow_us")}
             </p>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
-            © 2026 Automatiza. Todos os direitos reservados.
+            © 2026 Automatiza. {t("footer.rights")}
           </p>
           <p className="text-gray-400 text-sm">
-            Automatiza - Especialista em Automação de Vans
+            {t("footer.specialist")}
           </p>
         </div>
       </div>

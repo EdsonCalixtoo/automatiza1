@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 import { Search, Zap, Badge, Calendar, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export function VehicleSelector() {
+  const { t } = useTranslation();
   const [selection, setSelection] = useState<VehicleSelection>({
     brand: null,
     model: null,
@@ -82,20 +84,20 @@ export function VehicleSelector() {
               <div className="h-1 w-12 bg-gradient-to-r from-cyan-400 to-transparent rounded-full" />
               <Zap className="w-6 h-6 text-cyan-400 animate-pulse" />
               <h3 className="text-white text-3xl font-bold bg-gradient-to-r from-cyan-300 via-white to-cyan-300 bg-clip-text text-transparent">
-                Encontre a Solução Perfeita
+                {t("vehicle_selector.title")}
               </h3>
               <Zap className="w-6 h-6 text-cyan-400 animate-pulse" />
               <div className="h-1 w-12 bg-gradient-to-l from-cyan-400 to-transparent rounded-full" />
             </div>
-            <p className="text-center text-gray-300 text-sm font-medium tracking-wide">Escolha sua marca, modelo e ano para acessar produtos exclusivos</p>
+            <p className="text-center text-gray-300 text-sm font-medium tracking-wide">{t("vehicle_selector.subtitle")}</p>
           </div>
 
           {/* Progress Indicator */}
           <div className="flex gap-2 mb-12 justify-center relative z-10">
             {[
-              { step: 1, label: "Marca", active: !!selection.brand },
-              { step: 2, label: "Modelo", active: !!selection.model },
-              { step: 3, label: "Ano", active: !!selection.year },
+              { step: 1, label: t("vehicle_selector.brand"), active: !!selection.brand },
+              { step: 2, label: t("vehicle_selector.model"), active: !!selection.model },
+              { step: 3, label: t("vehicle_selector.year"), active: !!selection.year },
             ].map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <div className={`relative ${item.active ? "bg-gradient-to-r from-cyan-500 to-cyan-600" : "bg-gray-700/50"} rounded-full p-2.5 transition-all duration-500 shadow-lg ${item.active ? "shadow-cyan-500/50" : ""}`}>
@@ -123,11 +125,11 @@ export function VehicleSelector() {
                   <div className="p-2.5 bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg border border-cyan-500/30">
                     <Badge className="w-5 h-5 text-cyan-400" />
                   </div>
-                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">Marca</label>
+                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">{t("vehicle_selector.brand")}</label>
                 </div>
                 <Select value={selection.brand || ""} onValueChange={handleBrandChange}>
                   <SelectTrigger className="bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-600/50 text-white hover:border-cyan-500/70 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 transition-all duration-300 backdrop-blur-md text-base font-medium">
-                    <SelectValue placeholder="Selecione uma marca" />
+                    <SelectValue placeholder={t("vehicle_selector.select_brand")} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800/95 border-gray-700/50 backdrop-blur-md">
                     {VEHICLE_BRANDS.map((brand) => (
@@ -152,11 +154,11 @@ export function VehicleSelector() {
                   <div className="p-2.5 bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg border border-cyan-500/30">
                     <Badge className="w-5 h-5 text-cyan-400" />
                   </div>
-                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">Modelo</label>
+                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">{t("vehicle_selector.model")}</label>
                 </div>
                 <div className="bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-600/50 rounded-2xl px-4 py-3 backdrop-blur-md">
                   <p className="text-white font-medium text-base">
-                    {selection.model || "Selecione uma marca"}
+                    {selection.model || t("vehicle_selector.select_brand")}
                   </p>
                 </div>
               </div>
@@ -170,7 +172,7 @@ export function VehicleSelector() {
                   <div className="p-2.5 bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg border border-cyan-500/30">
                     <Calendar className="w-5 h-5 text-cyan-400" />
                   </div>
-                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">Ano</label>
+                  <label className="text-sm font-bold text-gray-100 uppercase tracking-wider">{t("vehicle_selector.year")}</label>
                 </div>
                 <Select
                   value={selection.year?.toString() || ""}
@@ -178,7 +180,7 @@ export function VehicleSelector() {
                   disabled={!selection.model}
                 >
                   <SelectTrigger className="bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-600/50 text-white hover:border-cyan-500/70 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md text-base font-medium">
-                    <SelectValue placeholder="Selecione um ano" />
+                    <SelectValue placeholder={t("vehicle_selector.select_year")} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800/95 border-gray-700/50 backdrop-blur-md">
                     {[...VEHICLE_YEARS].reverse().map((year) => (
@@ -209,7 +211,7 @@ export function VehicleSelector() {
               }`}
             >
               <Search className="w-6 h-6 mr-3" />
-              Buscar Produtos
+              {t("vehicle_selector.search_products")}
               {isComplete && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
             </Button>
 
@@ -217,7 +219,7 @@ export function VehicleSelector() {
             {isComplete && (
               <div className="px-6 py-4 bg-gradient-to-r from-cyan-500/15 via-blue-500/10 to-cyan-500/15 border border-cyan-500/40 rounded-2xl text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <p className="text-sm text-gray-200">
-                  Você selecionou: <br />
+                  {t("vehicle_selector.you_selected")} <br />
                   <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300 text-base">
                     {selection.brand} {selection.model} • {selection.year}
                   </span>

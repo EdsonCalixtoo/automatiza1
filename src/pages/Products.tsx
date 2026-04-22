@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/layout/Layout";
 import { CartNotification } from "@/components/cart/CartNotification";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,11 @@ import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/utils";
 
 const Products = () => {
+  const { t, i18n } = useTranslation();
+  const { lang } = useParams();
+  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
+  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+
   const [searchParams] = useSearchParams();
   const vehicleParam = searchParams.get("vehicle");
   const { products } = useProducts();
@@ -34,71 +40,71 @@ const Products = () => {
   // Define categories and subcategories structure
   const categoryStructure: Record<string, { label: string; icon: string; subcategories: string[] }> = {
     "citroen-jumper": { 
-      label: "Citroen - Jumper", 
+      label: t("categories.jumper"), 
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor", "ABNT"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
     },
     "citroen-jumpy": {
-      label: "Citroen - Jumpy",
+      label: t("categories.jumpy"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "fiat-ducato": {
-      label: "Fiat - Ducato",
+      label: t("categories.ducato"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor", "ABNT"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
     },
     "fiat-scudo": {
-      label: "Fiat Scudo",
+      label: t("categories.scudo"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "ford-transit": {
-      label: "Ford - Transit",
+      label: t("categories.transit"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "iveco-daily": {
-      label: "Iveco - Daily",
+      label: t("categories.daily"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor", "ABNT"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
     },
     "kia-besta": {
-      label: "Kia - Besta",
+      label: t("categories.besta"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor", "ABNT"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
     },
     "mercedes-sprinter": {
-      label: "Mercedes - Sprinter",
+      label: t("categories.sprinter"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "peugeot-boxer": {
-      label: "Peugeot - Boxer",
+      label: t("categories.boxer"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "peugeot-expert": {
-      label: "Peugeot Expert",
+      label: t("categories.expert"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "renault-master": {
-      label: "Renault - Master",
+      label: t("categories.master"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
     },
     "vw-kombi": {
-      label: "Volkswagen - Kombi",
+      label: t("categories.kombi"),
       icon: "🚐",
-      subcategories: ["Com Sensor", "Sem Sensor", "ABNT"]
+      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
     },
   };
 
   const otherCategories = [
-    { id: "completo", label: "Kit Completo", icon: "🏆" },
-    { id: "simples", label: "Kit Simples", icon: "⚡" },
-    { id: "consumivel", label: "Consumíveis & Peças", icon: "🔧" },
+    { id: "completo", label: t("categories.complete_kit"), icon: "🏆" },
+    { id: "simples", label: t("categories.simple_kit"), icon: "⚡" },
+    { id: "consumivel", label: t("categories.consumables"), icon: "🔧" },
   ];
 
   const filteredProducts = products.filter(p => {
@@ -131,13 +137,13 @@ const Products = () => {
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <div className="flex items-center justify-center gap-3 text-white/80">
               <Zap className="w-5 h-5" />
-              <span className="font-semibold">Catálogo Completo</span>
+              <span className="font-semibold">{t("products.full_catalog")}</span>
             </div>
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-white">
-              Nossos Produtos
+              {t("header.products")}
             </h1>
             <p className="text-xl text-white/90 leading-relaxed">
-              Conheça nossa linha completa de kits de automação e componentes de qualidade premium
+              {t("products.subtitle")}
             </p>
           </div>
         </div>
@@ -154,7 +160,7 @@ const Products = () => {
             >
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-cyan-600" />
-                <span className="font-bold text-gray-900">Filtrar por Veículo</span>
+                <span className="font-bold text-gray-900">{t("products.filter_by")}</span>
               </div>
               <ChevronDown className="w-5 h-5 text-gray-400" />
             </button>
@@ -177,12 +183,12 @@ const Products = () => {
               <div className="bg-white rounded-2xl lg:border-2 lg:border-gray-100 lg:p-6 sticky top-24">
                 <div className="flex items-center gap-2 mb-6">
                   <Filter className="w-5 h-5 text-cyan-600" />
-                  <h2 className="font-heading text-lg font-bold text-gray-900">Filtros</h2>
+                  <h2 className="font-heading text-lg font-bold text-gray-900">{t("products.filters")}</h2>
                 </div>
 
                 {/* Other Categories */}
                 <div className="mb-8 pb-8 border-b-2 border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Produtos</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">{t("header.products")}</h3>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
@@ -196,7 +202,7 @@ const Products = () => {
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
-                      📦 Todos os Produtos
+                      📦 {t("products.all_products")}
                     </button>
                     {otherCategories.map((cat) => (
                       <button
@@ -220,7 +226,7 @@ const Products = () => {
 
                 {/* Door Categories */}
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Portas Automáticas</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">{t("products.automatic_doors")}</h3>
                   <div className="space-y-1">
                     {Object.entries(categoryStructure).map(([key, catData]) => (
                       <div key={key}>
@@ -299,7 +305,7 @@ const Products = () => {
               <div className="mb-12 flex items-center justify-between">
                 <div>
                   <p className="text-gray-600">
-                    Mostrando <span className="font-bold text-cyan-600">{filteredProducts.length}</span> produtos
+                    {t("products.showing")} <span className="font-bold text-cyan-600">{filteredProducts.length}</span> {t("common.items")}
                   </p>
                 </div>
               </div>
@@ -309,13 +315,13 @@ const Products = () => {
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 transform hover:-translate-y-2 flex flex-col">
                     {/* Image Area */}
-                    <Link to={`/produto/${product.id}`} className="relative h-60 overflow-hidden bg-gray-50 flex items-center justify-center border-b border-gray-100">
+                    <Link to={toL(`/produto/${product.id}`)} className="relative h-60 overflow-hidden bg-gray-50 flex items-center justify-center border-b border-gray-100">
                       <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                         <span className="bg-cyan-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
-                          {product.badge || 'Aniversário'}
+                          {product.badge || t("hero.anniversary").split(" ")[0]}
                         </span>
                         <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-amber-950 px-3 py-1 rounded-lg text-center text-[9px] font-black uppercase tracking-tighter shadow-lg flex items-center gap-1 border border-amber-400/50">
-                          <Star className="w-3 h-3 fill-amber-950" /> 10 ANOS
+                          <Star className="w-3 h-3 fill-amber-950" /> {t("hero.years")}
                         </span>
                       </div>
                       <img 
@@ -328,7 +334,7 @@ const Products = () => {
                     {/* Content */}
                     <div className="p-6 flex flex-col flex-grow">
                       <div className="mb-4">
-                        <Link to={`/produto/${product.id}`}>
+                        <Link to={toL(`/produto/${product.id}`)}>
                           <h3 className="font-heading text-lg font-bold text-gray-900 line-clamp-2 hover:text-cyan-600 transition-colors">
                             {product.name}
                           </h3>
@@ -347,7 +353,7 @@ const Products = () => {
                             </span>
                           )}
                             <div className="flex flex-col">
-                             <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest mb-0.5 animate-pulse">✨ Aniversário Automatiza</span>
+                             <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest mb-0.5 animate-pulse">✨ {t("hero.anniversary")}</span>
                              <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-400">
                                {formatCurrency(product.price)}
                              </span>
@@ -355,7 +361,7 @@ const Products = () => {
                         </div>
                         {(product.originalPrice ?? 0) > 0 && (
                           <span className="text-[10px] text-green-600 font-bold mt-1">
-                            ECONOMIZE {formatCurrency(product.originalPrice! - product.price)}
+                            {t("products.save")} {formatCurrency(product.originalPrice! - product.price)}
                           </span>
                         )}
                       </div>
@@ -381,11 +387,11 @@ const Products = () => {
                           }`}
                         >
                           <ShoppingCart className="w-4 h-4" />
-                          {addedToCart[product.id] ? "ADICIONADO" : "COMPRAR AGORA"}
+                          {addedToCart[product.id] ? t("common.added") : t("home.buy_now")}
                         </button>
-                        <Link to={`/produto/${product.id}`} className="block">
+                        <Link to={toL(`/produto/${product.id}`)} className="block">
                           <button className="w-full h-11 border-2 border-slate-100 text-slate-500 hover:border-cyan-100 hover:text-cyan-600 hover:bg-cyan-50 font-bold rounded-xl text-xs transition-all duration-300 uppercase tracking-widest">
-                            Ver detalhes
+                            {t("home.more_details")}
                           </button>
                         </Link>
                       </div>
@@ -398,7 +404,7 @@ const Products = () => {
               {filteredProducts.length === 0 && (
                 <div className="text-center py-20">
                   <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg font-medium">Nenhum produto encontrado nesta categoria</p>
+                  <p className="text-gray-600 text-lg font-medium">{t("products.no_products")}</p>
                 </div>
               )}
             </div>

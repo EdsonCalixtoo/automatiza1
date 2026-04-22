@@ -1,6 +1,8 @@
 import { Phone, MessageCircle, ArrowRight, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CTA() {
+  const { t } = useTranslation();
   return (
     <section className="py-28 bg-gradient-to-b from-slate-950 to-slate-950 relative overflow-hidden">
       {/* Background */}
@@ -25,20 +27,20 @@ export function CTA() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-4 py-2 rounded-full mb-8">
             <Zap className="w-4 h-4 text-cyan-400 fill-cyan-400" />
-            <span className="text-cyan-400 font-semibold text-sm">Atendimento personalizado disponível agora</span>
+            <span className="text-cyan-400 font-semibold text-sm">{t("cta.badge")}</span>
           </div>
 
           {/* Title */}
           <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-[1.05]">
-            PRONTO PARA{" "}
+            {t("cta.title_part1")}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400">
-              AUTOMATIZAR
+              {t("cta.title_part2")}
             </span>{" "}
-            SUA VAN.
+            {t("cta.title_part3")}
           </h2>
 
           <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Entre em contato agora e descubra como nosso sistema de automação pode facilitar o dia a dia dos seus passageiros e motoristas.
+            {t("cta.subtitle")}
           </p>
 
           {/* CTA Buttons */}
@@ -64,10 +66,10 @@ export function CTA() {
           {/* Trust strip */}
           <div className="flex flex-wrap items-center justify-center gap-8 pt-10 border-t border-white/10">
             {[
-              { icon: "✅", text: "Garantia 12 meses" },
-              { icon: "🚚", text: "Entrega em todo Brasil" },
-              { icon: "🔒", text: "Pagamento seguro" },
-              { icon: "⚡", text: "Instalação profissional" },
+              { icon: "✅", text: t("cta.trust_1") },
+              { icon: "🚚", text: t("cta.trust_2") },
+              { icon: "🔒", text: t("cta.trust_3") },
+              { icon: "⚡", text: t("cta.trust_4") },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-slate-400 hover:text-slate-300 transition-colors">
                 <span className="text-xl">{item.icon}</span>

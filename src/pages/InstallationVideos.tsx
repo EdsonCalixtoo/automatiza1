@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Play, Video, Wrench, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface VideoItem {
   id: string;
@@ -9,20 +10,23 @@ interface VideoItem {
   category: string;
 }
 
-const videos: VideoItem[] = [
+const getVideos = (t: any): VideoItem[] => [
   {
     id: "v1",
-    title: "VÍDEO DEMONSTRATIVO – Automatizador de Porta",
+    title: t("installation.video_title_1"),
     youtubeId: "U7ooQjUCNn0",
-    category: "Instalação"
+    category: t("installation.category_installation")
   }
 ];
 
-const categories = ["Todos", "Instalação"];
+const getCategories = (t: any) => [t("installation.category_all"), t("installation.category_installation")];
 
 export default function InstallationVideos() {
-  const [selectedCategory, setSelectedCategory] = React.useState("Todos");
-  const filteredVideos = selectedCategory === "Todos" ? videos : videos.filter(v => v.category === selectedCategory);
+  const { t } = useTranslation();
+  const videos = getVideos(t);
+  const categories = getCategories(t);
+  const [selectedCategory, setSelectedCategory] = React.useState(categories[0]);
+  const filteredVideos = selectedCategory === categories[0] ? videos : videos.filter(v => v.category === selectedCategory);
 
   return (
     <Layout>
@@ -34,13 +38,13 @@ export default function InstallationVideos() {
           <div className="max-w-3xl mx-auto space-y-4 animate-slide-up">
             <div className="inline-flex items-center justify-center gap-2 text-red-600 font-semibold text-sm uppercase tracking-wider bg-red-100/50 px-4 py-2 rounded-full border border-red-200">
               <Play className="w-4 h-4" />
-              Aprenda Passo a Passo
+              {t("installation.badge")}
             </div>
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-gray-900">
-              Vídeos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-700">Instalação</span>
+              {t("installation.title_1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-700">{t("installation.title_2")}</span>
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Assista aos tutoriais completos e aprenda como instalar corretamente seu produto Automatiza
+              {t("installation.subtitle")}
             </p>
           </div>
         </div>
@@ -51,7 +55,7 @@ export default function InstallationVideos() {
         <div className="container mx-auto px-4">
           {/* Category Filter */}
           <div className="mb-12 animate-slide-up" style={{ animationDelay: '100ms' }}>
-            <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6">Filtrar por Categoria</h2>
+            <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6">{t("installation.filter_title")}</h2>
             <div className="flex flex-wrap gap-3">
               {categories.map((category) => (
                 <button
@@ -73,7 +77,7 @@ export default function InstallationVideos() {
           <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
             <h2 className="font-heading text-3xl font-bold text-gray-900 mb-8 flex items-center gap-2">
               <Video className="w-8 h-8 text-red-600" />
-              {selectedCategory === "Todos" ? "Todos os Vídeos" : `Categoria: ${selectedCategory}`}
+              {selectedCategory === categories[0] ? t("installation.all_videos") : `${t("installation.category_label")} ${selectedCategory}`}
               <span className="text-lg font-normal text-gray-500">({filteredVideos.length})</span>
             </h2>
 
@@ -118,7 +122,7 @@ export default function InstallationVideos() {
                       className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                     >
                       <Play className="w-4 h-4" />
-                      Assistir no YouTube
+                      {t("installation.watch_youtube")}
                     </a>
                   </div>
                 </div>
@@ -134,8 +138,8 @@ export default function InstallationVideos() {
                   ✓
                 </div>
                 <div>
-                  <h3 className="font-semibold text-blue-900 mb-2">Assista com Atenção</h3>
-                  <p className="text-blue-800 text-sm">Reproduza os vídeos em HD e pause quando necessário para acompanhar cada passo</p>
+                  <h3 className="font-semibold text-blue-900 mb-2">{t("installation.tip_1_title")}</h3>
+                  <p className="text-blue-800 text-sm">{t("installation.tip_1_text")}</p>
                 </div>
               </div>
             </div>
@@ -146,8 +150,8 @@ export default function InstallationVideos() {
                   ✓
                 </div>
                 <div>
-                  <h3 className="font-semibold text-cyan-900 mb-2">Tenha as Ferramentas</h3>
-                  <p className="text-cyan-800 text-sm">Prepare todas as ferramentas e peças necessárias antes de iniciar a instalação</p>
+                  <h3 className="font-semibold text-cyan-900 mb-2">{t("installation.tip_2_title")}</h3>
+                  <p className="text-cyan-800 text-sm">{t("installation.tip_2_text")}</p>
                 </div>
               </div>
             </div>
@@ -158,8 +162,8 @@ export default function InstallationVideos() {
                   ✓
                 </div>
                 <div>
-                  <h3 className="font-semibold text-purple-900 mb-2">Dúvidas?</h3>
-                  <p className="text-purple-800 text-sm">Entre em contato conosco se tiver dúvidas durante o processo de instalação</p>
+                  <h3 className="font-semibold text-purple-900 mb-2">{t("installation.tip_3_title")}</h3>
+                  <p className="text-purple-800 text-sm">{t("installation.tip_3_text")}</p>
                 </div>
               </div>
             </div>
