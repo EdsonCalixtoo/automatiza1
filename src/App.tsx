@@ -54,10 +54,52 @@ const LanguageWrapper = () => {
 
 const RootRedirect = () => {
   const { i18n } = useTranslation();
-  const detectedLang = i18n.language?.split('-')[0] || 'pt';
-  const finalLang = ['pt', 'en', 'es'].includes(detectedLang) ? detectedLang : 'pt';
-  
-  return <Navigate to={`/${finalLang}`} replace />;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const detectLanguage = async () => {
+      // 1. Se já existe uma preferência salva, usamos ela
+      const saved = localStorage.getItem('i18nextLng');
+      if (saved) {
+        const lang = saved.split('-')[0];
+        if (['pt', 'en', 'es'].includes(lang)) {
+          navigate(`/${lang}`, { replace: true });
+          return;
+        }
+      }
+
+      // 2. Tentativa por IP (Geolocalização)
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const country = data.country_code; // Ex: "US", "BR", "ES"
+        
+        let targetLang = 'pt';
+        const enCountries = ['US', 'GB', 'CA', 'AU', 'NZ', 'IE'];
+        const esCountries = ['ES', 'MX', 'AR', 'CL', 'CO', 'PE', 'VE', 'UY', 'PY', 'BO', 'EC'];
+        
+        if (enCountries.includes(country)) targetLang = 'en';
+        else if (esCountries.includes(country)) targetLang = 'es';
+        else targetLang = 'pt';
+        
+        navigate(`/${targetLang}`, { replace: true });
+      } catch (error) {
+        // 3. Fallback: Se a API de IP falhar, usamos o idioma do navegador
+        console.log("GeoIP failed, falling back to browser language");
+        const browserLang = i18n.language?.split('-')[0] || 'pt';
+        const finalLang = ['pt', 'en', 'es'].includes(browserLang) ? browserLang : 'pt';
+        navigate(`/${finalLang}`, { replace: true });
+      }
+    };
+
+    detectLanguage();
+  }, [navigate, i18n.language]);
+
+  return (
+    <div className="fixed inset-0 bg-white flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 };
 
 const App = () => (
