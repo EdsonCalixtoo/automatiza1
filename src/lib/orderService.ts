@@ -19,10 +19,9 @@ export async function createOrder(payload: {
     ano_veiculo?: string;
     cliente_cpf_cnpj?: string;
     cartao_final?: string;
-    lang?: string;
 }) {
     const { data, error } = await supabase
-        .from("pedidos")
+        .from("orders")
         .insert({
             cliente_nome: payload.cliente_nome,
             cliente_email: payload.cliente_email,
@@ -51,8 +50,7 @@ export async function createOrder(payload: {
         await supabase.functions.invoke('send-order-email', {
             body: { 
                 order: data, 
-                type: 'novo_pedido',
-                lang: payload.lang || 'pt'
+                type: 'novo_pedido' 
             }
         });
     } catch (e) {
@@ -67,7 +65,7 @@ export async function createOrder(payload: {
  */
 export async function getOrder(orderId: string) {
     const { data, error } = await supabase
-        .from("pedidos")
+        .from("orders")
         .select("*")
         .eq("id", orderId)
         .single();
@@ -82,7 +80,7 @@ export async function getOrder(orderId: string) {
 export async function updateOrderStatus(
     orderId: string,
     status: "aguardando_pagamento" | "pago" | "cancelado",
-    extra?: { pix_code?: string; pix_qrcode?: string; mp_payment_id?: string; cartao_final?: string; lang?: string }
+    extra?: { pix_code?: string; pix_qrcode?: string; mp_payment_id?: string; cartao_final?: string }
 ) {
     const updateData: any = { status };
     if (extra?.pix_code) updateData.pix_code = extra.pix_code;
@@ -92,7 +90,7 @@ export async function updateOrderStatus(
     if (status === "pago") updateData.data_pagamento = new Date().toISOString();
 
     const { data: order, error } = await supabase
-        .from("pedidos")
+        .from("orders")
         .update(updateData)
         .eq("id", orderId)
         .select()
@@ -106,8 +104,7 @@ export async function updateOrderStatus(
             await supabase.functions.invoke('send-order-email', {
                 body: { 
                     order: order, 
-                    type: 'pagamento_aprovado',
-                    lang: extra?.lang || 'pt'
+                    type: 'pagamento_aprovado' 
                 }
             });
         } catch (e) {
@@ -123,7 +120,7 @@ export async function updateOrderStatus(
  */
 export async function listOrders() {
     const { data, error } = await supabase
-        .from("pedidos")
+        .from("orders")
         .select("*")
         .order("data_criacao", { ascending: false });
 
@@ -136,10 +133,70 @@ export async function listOrders() {
  */
 export async function deleteOrder(orderId: string) {
     const { error } = await supabase
-        .from("pedidos")
+        .from("orders")
         .delete()
         .eq("id", orderId);
 
     if (error) throw new Error(`Erro ao deletar pedido: ${error.message}`);
     return true;
+}
+
+/**
+ * Sincroniza o status de um pedido com o Mercado Pago
+ */
+export async function syncOrderWithMercadoPago(orderId: string, mpPaymentId: string) {
+    const { supabaseUrl, supabaseAnonKey } = (await import("@/lib/supabase"));
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/mercadopago-payment`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+            check_payment_id: mpPaymentId,
+            orderId: orderId
+        }),
+    });
+
+    if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Erro ao consultar Mercado Pago");
+    }
+
+    const data = await response.json();
+    
+    // Mapear status do MP para nosso sistema
+    const statusMapping: Record<string, string> = {
+        'approved': 'pago',
+        'pending': 'aguardando',
+        'in_process': 'aguardando',
+        'rejected': 'recusado',
+        'cancelled': 'cancelado'
+    };
+
+    const novoStatus = statusMapping[data.status] || 'aguardando';
+    
+    // Se o status for diferente do atual ou for 'pago', atualizar no banco
+    await updateOrderStatus(orderId, novoStatus as any);
+    
+    return { 
+        status: novoStatus, 
+        mpStatus: data.status, 
+        detail: data.status_detail 
+    };
+}
+
+/**
+ * Busca logs de pagamento para um pedido
+ */
+export async function listOrderLogs(orderId: string) {
+    const { data, error } = await supabase
+        .from("pagamentos")
+        .select("*")
+        .eq("external_reference", orderId)
+        .order("created_at", { ascending: false });
+
+    if (error) return [];
+    return data;
 }

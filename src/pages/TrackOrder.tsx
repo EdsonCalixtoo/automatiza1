@@ -6,7 +6,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Package, Clock, CheckCircle2, Factory, Truck, AlertCircle, ArrowLeft, Search, Mail, Receipt, Calendar, CreditCard } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
 
 interface Order {
     id: string;
@@ -20,7 +19,6 @@ interface Order {
 }
 
 export default function TrackOrder() {
-    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const [orderId, setOrderId] = useState(searchParams.get("id") || "");
     const [email, setEmail] = useState(searchParams.get("email") || "");
@@ -34,7 +32,7 @@ export default function TrackOrder() {
         setLoading(true);
         setError(null);
         try {
-            let query = supabase.from("pedidos").select("*").eq("id", id);
+            let query = supabase.from("orders").select("*").eq("id", id);
             
             if (emailStr) {
                 query = query.ilike("cliente_email", emailStr.trim());
@@ -43,13 +41,13 @@ export default function TrackOrder() {
             const { data, error } = await query.single();
 
             if (error || !data) {
-                setError(t("track_order.error_not_found"));
+                setError("Pedido não encontrado. Verifique os dados informados.");
                 setOrder(null);
             } else {
                 setOrder(data);
             }
         } catch (err) {
-            setError(t("track_order.error_generic"));
+            setError("Ocorreu um erro ao buscar o pedido.");
         } finally {
             setLoading(false);
         }
@@ -72,57 +70,57 @@ export default function TrackOrder() {
             case "aguardando_pagamento":
             case "pendente":
                 return { 
-                    label: t("track_order.status_waiting"), 
+                    label: "Aguardando Pagamento", 
                     icon: CreditCard, 
-                    color: "text-amber-500", 
+                    color: "text-yellow-500", 
                     bg: "bg-amber-50", 
                     border: "border-amber-200",
                     step: 1,
-                    desc: t("track_order.status_waiting_desc")
+                    desc: "Recebemos seu pedido e estamos aguardando a confirmação do pagamento."
                 };
             case "pagamento_aprovado":
             case "pago":
                 return { 
-                    label: t("track_order.status_paid"), 
+                    label: "Pagamento Aprovado", 
                     icon: CheckCircle2, 
                     color: "text-emerald-500", 
                     bg: "bg-emerald-50", 
                     border: "border-emerald-200",
                     step: 2,
-                    desc: t("track_order.status_paid_desc")
+                    desc: "Tudo certo! Seu pagamento foi confirmado e seu pedido está pronto para a próxima fase."
                 };
             case "em_fabricacao":
             case "confirmado":
                 return { 
-                    label: t("track_order.status_manufacturing"), 
+                    label: "Pedido em Fabricação", 
                     icon: Factory, 
                     color: "text-blue-500", 
                     bg: "bg-blue-50", 
                     border: "border-blue-200",
                     step: 3,
-                    desc: t("track_order.status_manufacturing_desc")
+                    desc: "Nosso time de produção já iniciou a fabricação dos seus produtos."
                 };
             case "retirado_fabrica":
             case "enviado":
             case "entregue":
                 return { 
-                    label: t("track_order.status_shipped"), 
+                    label: "Pedido Retirado da Fábrica", 
                     icon: Package, 
                     color: "text-indigo-600", 
                     bg: "bg-indigo-50", 
                     border: "border-indigo-200",
                     step: 4,
-                    desc: t("track_order.status_shipped_desc")
+                    desc: "Seu pedido foi finalizado e já saiu da nossa fábrica!"
                 };
             case "cancelado":
                 return { 
-                    label: t("track_order.status_canceled"), 
+                    label: "Cancelado", 
                     icon: AlertCircle, 
                     color: "text-red-500", 
                     bg: "bg-red-50", 
                     border: "border-red-200",
                     step: 0,
-                    desc: t("track_order.status_canceled_desc")
+                    desc: "Este pedido foi cancelado. Entre em contato para mais informações."
                 };
             default:
                 return { label: status, icon: Package, color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", step: 1, desc: "" };
@@ -133,15 +131,15 @@ export default function TrackOrder() {
         <div className="min-h-screen bg-[#FDFDFF] flex flex-col font-sans">
             <Header />
             
-            <main className="flex-1 pt-32 pb-20 px-6">
+            <main className="flex-1 pt-44 pb-20 px-6">
                 <div className="max-w-3xl mx-auto">
                     <motion.div 
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <Link to="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-cyan-600 font-semibold mb-8 transition-all group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-green-600 font-semibold mb-8 transition-all group">
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                            {t("track_order.back_to_store")}
+                            Voltar para a loja
                         </Link>
                     </motion.div>
 
@@ -155,21 +153,21 @@ export default function TrackOrder() {
                                 className="bg-white rounded-[2rem] p-10 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100"
                             >
                                 <div className="max-w-sm mx-auto text-center space-y-8">
-                                    <div className="w-20 h-20 bg-cyan-50 rounded-3xl flex items-center justify-center mx-auto ring-8 ring-cyan-50/50">
-                                        <Search className="w-10 h-10 text-cyan-600" />
+                                    <div className="w-20 h-20 bg-green-50 rounded-3xl flex items-center justify-center mx-auto ring-8 ring-green-50/50">
+                                        <Search className="w-10 h-10 text-green-600" />
                                     </div>
                                     <div className="space-y-2">
-                                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t("track_order.title")}</h1>
-                                        <p className="text-slate-500 font-medium">{t("track_order.subtitle")}</p>
+                                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Rastrear seu Pedido</h1>
+                                        <p className="text-slate-500 font-medium">Acompanhe cada etapa da sua fabricação</p>
                                     </div>
                                     
                                     <form onSubmit={handleSubmit} className="space-y-4 pt-4">
                                         <div className="relative group">
-                                            <Receipt className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-cyan-500 transition-colors" />
+                                            <Receipt className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-green-500 transition-colors" />
                                             <input 
                                                 type="text" 
-                                                placeholder={t("track_order.placeholder_id")}
-                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-cyan-500 focus:outline-none font-bold transition-all placeholder:text-slate-300"
+                                                placeholder="ID do Pedido" 
+                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-green-500 focus:outline-none font-bold transition-all placeholder:text-slate-300"
                                                 value={orderId}
                                                 onChange={(e) => setOrderId(e.target.value.replace("#", ""))}
                                                 required
@@ -178,9 +176,9 @@ export default function TrackOrder() {
                                         <button 
                                             type="submit" 
                                             disabled={loading}
-                                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/10 hover:bg-cyan-600 active:scale-[0.98] transition-all disabled:opacity-50"
+                                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/10 hover:bg-green-600 active:scale-[0.98] transition-all disabled:opacity-50"
                                         >
-                                            {loading ? t("track_order.button_searching") : t("track_order.button_consult")}
+                                            {loading ? "Buscando..." : "Consultar Status"}
                                         </button>
                                     </form>
 
@@ -231,21 +229,21 @@ export default function TrackOrder() {
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${((getStatusInfo(order.status).step - 1) / 3) * 100}%` }}
-                                                className="h-full bg-cyan-500 rounded-full"
+                                                className="h-full bg-green-500 rounded-full"
                                                 transition={{ duration: 1.5, ease: "easeOut" }}
                                             />
                                         </div>
                                         <div className="relative flex justify-between">
                                             {[
-                                                { label: t("track_order.timeline_waiting"), step: 1, icon: CreditCard },
-                                                { label: t("track_order.timeline_paid"), step: 2, icon: CheckCircle2 },
-                                                { label: t("track_order.timeline_manufacturing"), step: 3, icon: Factory },
-                                                { label: t("track_order.timeline_shipped"), step: 4, icon: Package }
+                                                { label: "Aguardando", step: 1, icon: CreditCard },
+                                                { label: "Aprovado", step: 2, icon: CheckCircle2 },
+                                                { label: "Fabricação", step: 3, icon: Factory },
+                                                { label: "Retirado", step: 4, icon: Package }
                                             ].map((s) => (
                                                 <div key={s.step} className="flex flex-col items-center gap-4">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all duration-700 z-10 ${
                                                         getStatusInfo(order.status).step >= s.step 
-                                                        ? "bg-white border-cyan-500 text-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-110" 
+                                                        ? "bg-white border-green-500 text-green-500 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-110" 
                                                         : "bg-slate-100 border-white text-slate-300"
                                                     }`}>
                                                         <s.icon className={`${getStatusInfo(order.status).step >= s.step ? "w-5 h-5" : "w-4 h-4"}`} />
@@ -263,8 +261,8 @@ export default function TrackOrder() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="bg-white rounded-[2rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-slate-50">
                                         <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-3">
-                                            <Package className="w-5 h-5 text-cyan-500" />
-                                            {t("track_order.order_items")}
+                                            <Package className="w-5 h-5 text-green-500" />
+                                            Itens no Pedido
                                         </h3>
                                         <div className="space-y-4">
                                             {order.itens.map((item: any, idx: number) => (
@@ -278,7 +276,7 @@ export default function TrackOrder() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="font-bold text-slate-900 truncate">{item.name}</h4>
-                                                        <p className="text-xs text-slate-400 font-bold">{item.quantity} {t("track_order.units")}</p>
+                                                        <p className="text-xs text-slate-400 font-bold">{item.quantity} unidade(s)</p>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="font-bold text-slate-900 text-sm">{formatCurrency(item.price * item.quantity)}</p>
@@ -292,20 +290,20 @@ export default function TrackOrder() {
                                         <div className="space-y-6">
                                             <div className="flex justify-between items-center">
                                                 <div className="space-y-1">
-                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{t("track_order.order_number")}</p>
+                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Número do Pedido</p>
                                                     <p className="font-bold text-lg">#{order.id.slice(0, 8)}</p>
                                                 </div>
                                                 <Receipt className="w-8 h-8 text-slate-700" />
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{t("track_order.total_final")}</p>
-                                                <p className="font-black text-3xl text-cyan-400">{formatCurrency(order.total)}</p>
+                                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Final</p>
+                                                <p className="font-black text-3xl text-yellow-400">{formatCurrency(order.total)}</p>
                                             </div>
                                         </div>
                                         
                                         <div className="mt-10 p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
                                             <p className="text-xs text-slate-300 leading-relaxed">
-                                                {t("track_order.tracking_footer")}
+                                                Seu código de rastreio de transportadora será atualizado assim que o pedido for finalizado.
                                             </p>
                                         </div>
                                     </div>
@@ -316,7 +314,7 @@ export default function TrackOrder() {
                                         onClick={() => { setOrder(null); setOrderId(""); setEmail(""); }}
                                         className="text-slate-400 hover:text-slate-900 font-bold text-sm transition-all"
                                     >
-                                        {t("track_order.consult_another")}
+                                        Consultar outro código
                                     </button>
                                 </div>
                             </motion.div>

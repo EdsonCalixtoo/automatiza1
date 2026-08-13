@@ -643,7 +643,6 @@
     "purchase_title": "Cómo Comprar",
     "purchase_intro": "✨ ¡Comprar en nuestra tienda es muy fácil! Siga los pasos a continuación:"
   },
-
   "categories": {
     "jumper": "Citroen - Jumper",
     "jumpy": "Citroen - Jumpy",
@@ -704,7 +703,24 @@
     "minha_conta": "Mi Cuenta",
     "atendimento_vip": "ATENCIÓN VIP",
     "admin_panel": "Panel de Administrador",
-    "main_menu": "Menú Principal"
+    "main_menu": "Menú Principal",
+    "nav": {
+      "inicio": "Inicio",
+      "produtos": "Productos",
+      "sobre": "Sobre Nosotros",
+      "contato": "Contacto",
+      "informacoes": "Información",
+      "seguranca": "Seguridad",
+      "envio": "Envío",
+      "garantia": "Garantía",
+      "comoComprar": "Cómo Comprar",
+      "trocasDevolucoes": "Cambios y Devoluciones",
+      "videosInstalacao": "Videos de Instalación"
+    },
+    "actions": {
+      "faleConosco": "Contáctenos",
+      "chamarWhatsapp": "CONTACTAR POR WHATSAPP"
+    }
   },
   "info": {
     "security": "Seguridad",

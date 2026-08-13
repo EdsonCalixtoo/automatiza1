@@ -21,7 +21,14 @@ import {
   Plus,
   Zap,
   Download,
-  Truck
+  Truck,
+  RefreshCw,
+  CreditCard,
+  History,
+  Info,
+  ExternalLink,
+  ShieldAlert,
+  ArrowRight
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -37,7 +44,7 @@ import { getSellerForCategory } from "@/data/sellers";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import { CATEGORY_LABELS } from "@/data/categories";
-import { listOrders, updateOrderStatus as updateOrderInSupabase, deleteOrder as deleteOrderInSupabase } from "@/lib/orderService";
+import { listOrders, updateOrderStatus as updateOrderInSupabase, deleteOrder as deleteOrderInSupabase, syncOrderWithMercadoPago, listOrderLogs } from "@/lib/orderService";
 
 interface Order {
   id: string;
@@ -45,7 +52,7 @@ interface Order {
   items: Array<{ id: string; name: string; quantity: number; price: number; category?: string }>;
   total: number;
   paymentMethod: string;
-  status: "pendente" | "aguardando" | "pago" | "confirmado" | "enviado" | "entregue" | "cancelado" | "recusado";
+  status: "pendente" | "aguardando" | "aguardando_pagamento" | "pago" | "confirmado" | "enviado" | "entregue" | "cancelado" | "recusado";
   customer: { name: string; email: string; phone: string; cpf_cnpj?: string };
   cartao_final?: string;
   seller?: string;
@@ -59,12 +66,14 @@ interface Order {
     estado: string;
     complemento?: string;
   };
+  mp_payment_id?: string;
   shippingMethod?: "entrega" | "retirada";
 }
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<"overview" | "orders" | "products" | "coupons" | "sellers" | "categories" | "diagnostico">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "orders" | "products" | "coupons" | "sellers" | "categories" | "diagnostico" | "financeiro">("overview");
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isSyncing, setIsSyncing] = useState<string | null>(null);
   const [selectedOrderStatus, setSelectedOrderStatus] = useState<{ [key: string]: string }>({});
   const [showProductForm, setShowProductForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
@@ -73,6 +82,20 @@ const Dashboard = () => {
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [editingSeller, setEditingSeller] = useState<Seller | null>(null);
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+
+  const toggleOrderExpansion = (orderId: string) => {
+    const newExpanded = new Set(expandedOrders);
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId);
+    } else {
+      newExpanded.add(orderId);
+    }
+    setExpandedOrders(newExpanded);
+  };
+
 
   const { 
     products, coupons, categories, subcategories, 
@@ -106,6 +129,8 @@ const Dashboard = () => {
           status: order.status,
           ano_veiculo: order.ano_veiculo,
           shippingMethod: order.tipo_entrega || "entrega",
+          mp_payment_id: order.mp_payment_id,
+          cpfCnpj: order.cliente_cpf_cnpj,
           address: order.endereco ? {
             cep: order.endereco.cep,
             rua: order.endereco.rua,
@@ -200,6 +225,151 @@ const Dashboard = () => {
         toast.error("Erro ao deletar: " + err.message);
       }
     }
+  };
+
+  const handleSyncOrder = async (orderId: string, initialMpPaymentId?: string) => {
+    setIsSyncing(orderId);
+    let mpPaymentId = initialMpPaymentId;
+
+    try {
+      if (!mpPaymentId) {
+        const logs = await listOrderLogs(orderId);
+        if (logs && logs.length > 0 && logs[0].mp_payment_id) {
+          mpPaymentId = logs[0].mp_payment_id;
+        }
+      }
+
+      if (!mpPaymentId) {
+        toast.info("Pedido sem pagamento gerado. Marcando como cancelado...");
+        await updateOrderInSupabase(orderId, "cancelado");
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: "cancelado" as any } : o));
+        setSelectedOrderStatus(prev => ({ ...prev, [orderId]: "cancelado" }));
+        setIsSyncing(null);
+        return;
+      }
+
+      const result = await syncOrderWithMercadoPago(orderId, mpPaymentId);
+      
+      let finalStatus = result.status;
+      if (result.mpStatus === 'pending' || result.mpStatus === 'in_process') {
+        finalStatus = 'cancelado';
+        await updateOrderInSupabase(orderId, "cancelado");
+      }
+
+      // Atualizar estado local
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, status: finalStatus as any } : o
+      ));
+      setSelectedOrderStatus(prev => ({ ...prev, [orderId]: finalStatus }));
+      
+      if (finalStatus === 'cancelado') {
+        toast.success("Pedido pendente foi marcado como Cancelado.");
+      } else {
+        toast.success(`Sincronizado! Status MP: ${result.mpStatus} (${result.detail})`);
+      }
+    } catch (err: any) {
+      console.error("Erro ao sincronizar:", err);
+      toast.error("Erro ao sincronizar: " + err.message);
+    } finally {
+      setIsSyncing(null);
+    }
+  };
+
+  const handleSyncAllOrders = async () => {
+    // Busca todos os pedidos que estão em um status pendente, independente de terem mp_payment_id ainda
+    const allPendingOrders = orders.filter(o => 
+      o.status === "aguardando" || o.status === "aguardando_pagamento" || o.status === "pendente"
+    );
+
+    if (allPendingOrders.length === 0) {
+      toast.info("Não há pedidos pendentes para sincronizar.");
+      return;
+    }
+
+    setIsSyncing("all");
+    let syncedCount = 0;
+    let skippedCount = 0;
+    let errorCount = 0;
+
+    toast.promise(
+      (async () => {
+        for (const order of allPendingOrders) {
+          try {
+            let mpId = order.mp_payment_id;
+
+            // Se não tem ID salvo no pedido, tentar buscar do log de pagamentos
+            if (!mpId) {
+              const logs = await listOrderLogs(order.id);
+              if (logs && logs.length > 0 && logs[0].mp_payment_id) {
+                mpId = logs[0].mp_payment_id;
+              }
+            }
+
+            if (mpId) {
+              const result = await syncOrderWithMercadoPago(order.id, mpId);
+              if (result.mpStatus === 'pending' || result.mpStatus === 'in_process') {
+                await updateOrderInSupabase(order.id, "cancelado");
+              }
+              syncedCount++;
+            } else {
+              // Se não tem ID, consideramos abandono e cancelamos
+              await updateOrderInSupabase(order.id, "cancelado");
+              skippedCount++; // Usando skippedCount para contar os cancelados sem ID
+            }
+          } catch (err) {
+            console.error(`Erro ao sincronizar pedido ${order.id}:`, err);
+            errorCount++;
+          }
+        }
+        
+        // Recarregar todos os pedidos após o loop
+        const data = await listOrders();
+        setOrders(data.map((order: any) => ({
+          id: order.id,
+          customer: {
+            name: order.cliente_nome,
+            email: order.cliente_email,
+            phone: order.cliente_telefone,
+            cpf_cnpj: order.cliente_cpf_cnpj,
+          },
+          date: order.data_criacao,
+          total: order.total,
+          items: order.itens,
+          paymentMethod: order.metodo_pagamento,
+          status: order.status,
+          ano_veiculo: order.ano_veiculo,
+          shippingMethod: order.tipo_entrega || "entrega",
+          mp_payment_id: order.mp_payment_id,
+          address: order.endereco ? {
+            cep: order.endereco.cep,
+            rua: order.endereco.rua,
+            numero: order.endereco.numero,
+            bairro: order.endereco.bairro,
+            city: order.endereco.cidade,
+            estado: order.endereco.estado,
+            complemento: order.endereco.complemento
+          } : undefined
+        })));
+        
+        setIsSyncing(null);
+        if (errorCount > 0) throw new Error(`${errorCount} erros durante a sincronização.`);
+        
+        return { syncedCount, skippedCount };
+      })(),
+      {
+        loading: 'Sincronizando todos os pedidos pendentes...',
+        success: ({ syncedCount, skippedCount }) => {
+          if (skippedCount > 0 && syncedCount === 0) {
+             return `${skippedCount} pedido(s) sem pagamento foram cancelados.`;
+          }
+          if (skippedCount > 0) {
+             return `${syncedCount} sincronizados. ${skippedCount} sem pgto cancelados.`;
+          }
+          return `${syncedCount} pedidos processados com sucesso!`;
+        },
+        error: (err) => `Erro: ${err.message}. ${syncedCount} pedidos foram atualizados.`,
+      }
+    );
   };
 
   const [showDownloadModal, setShowDownloadModal] = useState<string | null>(null);
@@ -626,7 +796,8 @@ const Dashboard = () => {
   const stats = {
     totalOrders: orders.length,
     totalSales: orders.filter(o => o.status === "pago" || o.status === "confirmado" || o.status === "enviado" || o.status === "entregue").reduce((sum, order) => sum + order.total, 0),
-    pendingOrders: orders.filter((o) => o.status === "pendente" || o.status === "aguardando").length,
+    totalPotential: orders.reduce((sum, order) => sum + order.total, 0),
+    pendingOrders: orders.filter((o) => o.status === "pendente" || o.status === "aguardando" || o.status === "aguardando_pagamento").length,
     paidOrders: orders.filter((o) => o.status === "pago" || o.status === "confirmado").length,
     shippedOrders: orders.filter((o) => o.status === "enviado").length,
     deliveredOrders: orders.filter((o) => o.status === "entregue").length,
@@ -654,6 +825,7 @@ const Dashboard = () => {
     const colors: { [key: string]: { bg: string; text: string; label: string; icon: any } } = {
       pendente: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pendente", icon: <Clock className="w-4 h-4" /> },
       aguardando: { bg: "bg-amber-100", text: "text-amber-800", label: "Aguardando Pagamento", icon: <Clock className="w-4 h-4" /> },
+      aguardando_pagamento: { bg: "bg-amber-100", text: "text-amber-800", label: "Aguardando Pagamento", icon: <Clock className="w-4 h-4" /> },
       pago: { bg: "bg-green-100", text: "text-green-800", label: "Pagamento Aprovado", icon: <CheckCircle2 className="w-4 h-4" /> },
       confirmado: { bg: "bg-blue-100", text: "text-blue-800", label: "Em Produção", icon: <Package className="w-4 h-4" /> },
       enviado: { bg: "bg-purple-100", text: "text-purple-800", label: "Enviado", icon: <Truck className="w-4 h-4" /> },
@@ -673,56 +845,60 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Alerta de Conexão */}
+    <div className="flex h-screen bg-slate-900 overflow-hidden font-sans text-slate-200">
       <SupabaseConnectionAlert />
 
-      {/* Header Moderno */}
-      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white border-b border-white/10 backdrop-blur-xl sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                <BarChart3 className="w-6 h-6" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">Dashboard Admin</h1>
-                <p className="text-cyan-100 text-sm">Gerenciar sua loja</p>
-              </div>
-            </div>
-            <Link to="/" className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm border border-white/10">
-              <ArrowLeft className="w-6 h-6" />
-            </Link>
+      {/* Sidebar Navigation */}
+      <div className="w-72 bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0 z-40 shadow-2xl">
+        <div className="p-6 flex items-center gap-4 border-b border-slate-800 bg-slate-900/50">
+          <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden shadow-inner flex-shrink-0">
+            <img src="/mascote automatiza.png" alt="Mascote" className="w-full h-full object-cover scale-125 transform" />
+          </div>
+          <div className="overflow-hidden">
+            <h1 className="text-xl font-black text-white truncate">Dashboard</h1>
+            <p className="text-cyan-400 text-[10px] font-bold uppercase tracking-wider truncate">Admin Panel</p>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Navigation Tabs */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+        
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2 custom-scrollbar">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 px-2">Menu Principal</p>
           {[
             { id: "overview", label: "Visão Geral", icon: BarChart3 },
             { id: "orders", label: "Pedidos", icon: ShoppingCart },
             { id: "products", label: "Produtos", icon: Package },
-            { id: "sellers", label: "Vendedores", icon: Users },
+            { id: "categories", label: "Categorias", icon: Filter }, 
             { id: "coupons", label: "Cupons", icon: Ticket },
-            { id: "categories", label: "Categorias", icon: Ticket }, // Usando Ticket como ícone provisório ou Package
+            { id: "sellers", label: "Vendedores", icon: Users },
+            { id: "financeiro", label: "Financeiro", icon: DollarSign },
             { id: "diagnostico", label: "Diagnóstico", icon: Zap },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id as any)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap border backdrop-blur-sm ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
                 activeTab === id
-                  ? "bg-cyan-600 text-white shadow-lg border-cyan-500/50"
-                  : "bg-white/10 text-gray-200 hover:bg-white/20 border-white/10 hover:border-white/30"
+                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/20"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className={`w-5 h-5 ${activeTab === id ? "text-white" : "text-slate-500"}`} />
               {label}
             </button>
           ))}
         </div>
+
+        <div className="p-6 border-t border-slate-800 bg-slate-900/50">
+          <Link to="/" className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all duration-300 font-medium border border-slate-700">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Loja
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto bg-slate-900 custom-scrollbar relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/5 via-slate-900 to-blue-900/10 pointer-events-none" />
+        <div className="p-8 max-w-7xl mx-auto relative z-10">
 
         {/* Overview Tab */}
         {activeTab === "overview" && (
@@ -733,7 +909,7 @@ const Dashboard = () => {
                 icon={ShoppingCart}
                 label="Total de Pedidos"
                 value={stats.totalOrders}
-                color="from-blue-600 to-cyan-600"
+                color="from-blue-600 to-green-600"
                 trend="+12%"
               />
               <StatCard
@@ -796,7 +972,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                       <span className="text-gray-300">Clientes Ativos</span>
-                      <span className="text-cyan-400 font-bold text-lg">{new Set(orders.map(o => o.customer.email)).size}</span>
+                      <span className="text-yellow-400 font-bold text-lg">{new Set(orders.map(o => o.customer.email)).size}</span>
                     </div>
                   </div>
                 </div>
@@ -810,7 +986,10 @@ const Dashboard = () => {
                   <ShoppingCart className="w-6 h-6" />
                   Últimos Pedidos
                 </h3>
-                <button className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2 transition-colors">
+                <button 
+                  onClick={() => setActiveTab("orders")}
+                  className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2 transition-colors"
+                >
                   <Eye className="w-4 h-4" />
                   Ver Todos
                 </button>
@@ -836,7 +1015,7 @@ const Dashboard = () => {
                     <tbody>
                       {orders.slice(0, 5).map((order) => (
                         <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-4 text-cyan-400 font-mono text-sm">{order.id.slice(0, 8)}...</td>
+                          <td className="px-4 py-4 text-yellow-400 font-mono text-sm">{order.id.slice(0, 8)}...</td>
                           <td className="px-4 py-4 text-white">{order.customer.name}</td>
                           <td className="px-4 py-4 text-gray-400">{new Date(order.date).toLocaleDateString("pt-BR")}</td>
                           <td className="px-4 py-4 text-green-400 font-bold">{formatCurrency(order.total)}</td>
@@ -854,225 +1033,274 @@ const Dashboard = () => {
         {/* Orders Tab */}
         {activeTab === "orders" && (
           <div className="space-y-6">
-            {orders.length === 0 ? (
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-16 text-center border border-white/10 shadow-lg">
-                <ShoppingCart className="w-20 h-20 text-gray-400 mx-auto mb-6 opacity-40" />
-                <h3 className="text-2xl font-bold text-white mb-3">Nenhum pedido ainda</h3>
-                <p className="text-gray-400 text-lg">Seus pedidos aparecerão aqui quando os clientes fizerem compras</p>
+            {/* Header com Filtros e Ações em Lote */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/10 shadow-lg">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                  <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                    <ShoppingCart className="w-8 h-8 text-green-400" />
+                    Gerenciamento de Pedidos
+                  </h3>
+                  <p className="text-gray-400 text-sm mt-1">Total de {orders.length} pedidos encontrados</p>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder="Buscar por ID ou nome..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:border-green-500/50 outline-none transition-all"
+                    />
+                  </div>
+                  
+                  <select 
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="bg-white/5 border border-white/10 rounded-xl text-white text-sm px-4 py-2.5 outline-none focus:border-green-500/50 transition-all cursor-pointer"
+                  >
+                    <option value="todos">Todos os Status</option>
+                    <option value="pendente">Pendentes</option>
+                    <option value="pago">Pagos</option>
+                    <option value="confirmado">Em Produção</option>
+                    <option value="enviado">Enviados</option>
+                    <option value="entregue">Entregues</option>
+                    <option value="cancelado">Cancelados</option>
+                  </select>
+
+                  <button
+                    onClick={handleSyncAllOrders}
+                    disabled={isSyncing === "all"}
+                    className={`flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50 ${isSyncing === "all" ? "animate-pulse" : ""}`}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isSyncing === "all" ? "animate-spin" : ""}`} />
+                    Sync Pendentes
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-5">
-                {orders.map((order) => {
-                    return (
-                    <div
-                      key={order.id}
-                      className="group bg-gradient-to-br from-white/15 via-white/5 to-white/10 backdrop-blur-xl rounded-3xl border-2 border-white/10 hover:border-cyan-500/40 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-[1.01]"
-                    >
-                      {/* Header com ID, Cliente e Status */}
-                      <div className="p-6 border-b border-white/10 bg-gradient-to-r from-slate-800/40 to-transparent">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            </div>
+
+            {/* Listagem de Pedidos */}
+            <div className="space-y-4">
+              {orders
+                .filter(order => {
+                  const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                     order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+                  const matchesStatus = statusFilter === "todos" || order.status === statusFilter;
+                  return matchesSearch && matchesStatus;
+                })
+                .length === 0 ? (
+                  <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-20 text-center border border-white/10">
+                    <ShoppingCart className="w-20 h-20 text-gray-600 mx-auto mb-6 opacity-30" />
+                    <h3 className="text-xl font-bold text-gray-400">Nenhum pedido encontrado</h3>
+                    <p className="text-gray-500 mt-2">Tente ajustar seus filtros ou busca</p>
+                  </div>
+                ) : (
+                  orders
+                    .filter(order => {
+                      const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                         order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+                      const matchesStatus = statusFilter === "todos" || order.status === statusFilter;
+                      return matchesSearch && matchesStatus;
+                    })
+                    .map((order) => (
+                      <div 
+                        key={order.id}
+                        className={`group bg-white/5 backdrop-blur-xl rounded-2xl border transition-all duration-300 overflow-hidden ${
+                          expandedOrders.has(order.id) 
+                            ? "border-green-500/50 shadow-2xl shadow-green-500/5" 
+                            : "border-white/10 hover:border-white/20"
+                        }`}
+                      >
+                        {/* Linha Resumo (Sempre Visível) */}
+                        <div 
+                          onClick={() => toggleOrderExpansion(order.id)}
+                          className="flex flex-col lg:flex-row lg:items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors gap-4"
+                        >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex items-center justify-center border border-cyan-500/40 backdrop-blur-sm">
-                              <ShoppingCart className="w-6 h-6 text-cyan-400" />
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                              expandedOrders.has(order.id) ? "bg-green-500 text-slate-900" : "bg-white/10 text-gray-400"
+                            }`}>
+                              <Package className="w-5 h-5" />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <h3 className="font-black text-white text-lg">Pedido #{order.id.slice(0, 8)}...</h3>
+                                <span className="text-white font-bold text-lg">#{order.id.slice(0, 8)}</span>
                                 {order.ano_veiculo && (
-                                  <span className="bg-cyan-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse">
-                                    Ano: {order.ano_veiculo}
+                                  <span className="text-[10px] font-black px-2 py-0.5 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 rounded-full uppercase">
+                                    {order.ano_veiculo}
                                   </span>
                                 )}
                               </div>
                               <p className="text-gray-400 text-sm font-medium">{order.customer.name}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="text-gray-400 text-xs font-semibold">TOTAL</p>
-                              <p className="text-2xl font-black text-green-400">{formatCurrency(order.total)}</p>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1 lg:mx-12">
+                            <div>
+                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">DATA</p>
+                              <p className="text-gray-300 text-sm font-semibold">{new Date(order.date).toLocaleDateString("pt-BR")}</p>
                             </div>
-                            <StatusBadge status={selectedOrderStatus[order.id] || order.status} />
+                            <div>
+                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">TOTAL</p>
+                              <p className="text-green-400 text-sm font-black">{formatCurrency(order.total)}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">PAGAMENTO</p>
+                              <p className="text-gray-300 text-sm font-semibold uppercase">{order.paymentMethod}</p>
+                            </div>
+                            <div className="flex items-center">
+                              <StatusBadge status={selectedOrderStatus[order.id] || order.status} />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleSyncOrder(order.id, order.mp_payment_id)}
+                              disabled={isSyncing === order.id}
+                              className={`p-2.5 rounded-xl border border-white/10 hover:bg-green-500/20 hover:border-green-500/30 text-green-400 transition-all ${isSyncing === order.id ? 'opacity-50' : ''}`}
+                              title="Sincronizar MP"
+                            >
+                              <RefreshCw className={`w-4 h-4 ${isSyncing === order.id ? 'animate-spin' : ''}`} />
+                            </button>
+                            <button
+                              onClick={() => downloadOrder(order.id)}
+                              className="p-2.5 rounded-xl border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/30 text-blue-400 transition-all"
+                              title="Imprimir"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOrder(order.id)}
+                              className="p-2.5 rounded-xl border border-white/10 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 transition-all"
+                              title="Excluir"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <div className={`ml-2 p-1 rounded-full transition-transform duration-300 ${expandedOrders.has(order.id) ? "rotate-180 text-green-400" : "text-gray-600"}`}>
+                              <ArrowRight className="w-5 h-5 rotate-90" />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Conteúdo Principal */}
-                      <div className="p-6 space-y-6">
-                        {/* Itens com Vendedores */}
-                        <div>
-                          <p className="text-gray-300 font-bold text-sm mb-4 flex items-center gap-2">
-                            <Package className="w-4 h-4 text-cyan-400" />
-                            Itens do Pedido ({order.items.length})
-                          </p>
-                          <div className="space-y-4">
-                            {order.items.map((item, idx) => {
-                              const itemSeller = getSellerForCategory(item.category || "");
-                              const sellerName = itemSeller?.name || "Sem vendedor";
-                              const sellerAvatar = itemSeller?.avatar.charAt(0) || "?";
-                              const categoryFound = !!itemSeller;
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className="rounded-2xl border border-white/10 bg-gradient-to-r from-white/5 to-white/[0.02] p-4 hover:border-white/20 transition-all"
-                                >
-                                  {/* Item Info */}
-                                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-                                    <div className="flex-1">
-                                      <p className="text-white font-bold text-base flex items-center gap-2">
-                                        {item.name}
-                                        {order.ano_veiculo && (
-                                          <span className="text-cyan-400 text-xs font-black px-2 py-0.5 bg-cyan-400/10 rounded-lg border border-cyan-400/20">
-                                            {order.ano_veiculo}
-                                          </span>
-                                        )}
-                                      </p>
-                                      <p className="text-gray-500 text-sm">Qtd: {item.quantity} • {formatCurrency(item.price)}/un</p>
-                                    </div>
-                                    <p className="text-green-400 font-black text-lg">{formatCurrency(item.price * item.quantity)}</p>
+                        {/* Detalhes Expandidos */}
+                        {expandedOrders.has(order.id) && (
+                          <div className="px-5 pb-6 border-t border-white/5 bg-white/[0.02] animate-in slide-in-from-top-2 duration-300">
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+                              {/* Coluna 1: Itens */}
+                              <div className="xl:col-span-2 space-y-4">
+                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                  <Package className="w-4 h-4" /> Itens do Pedido
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {order.items.map((item, idx) => {
+                                    const seller = getSellerForCategory(item.category || "");
+                                    return (
+                                      <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-4 flex items-start justify-between group/item hover:border-white/20 transition-all">
+                                        <div>
+                                          <p className="text-white font-bold text-sm">{item.name}</p>
+                                          <p className="text-gray-500 text-xs mt-1">{item.quantity}x {formatCurrency(item.price)}</p>
+                                          {seller && (
+                                            <div className="mt-3 flex items-center gap-2">
+                                              <div className="w-6 h-6 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] font-bold">
+                                                {seller.avatar.charAt(0)}
+                                              </div>
+                                              <span className="text-[10px] text-purple-300 font-semibold">{seller.name}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <p className="text-green-400 font-bold text-sm">{formatCurrency(item.price * item.quantity)}</p>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {/* Status Change em Detalhes */}
+                                <div className="mt-6 flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                  <span className="text-gray-400 text-xs font-bold whitespace-nowrap">ALTERAR STATUS:</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {['pendente', 'pago', 'confirmado', 'enviado', 'entregue', 'cancelado'].map((status) => (
+                                      <button
+                                        key={status}
+                                        onClick={() => handleStatusChange(order.id, status)}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                                          (selectedOrderStatus[order.id] || order.status) === status
+                                            ? "bg-green-500 text-slate-900"
+                                            : "bg-white/10 text-gray-400 hover:bg-white/20"
+                                        }`}
+                                      >
+                                        {status}
+                                      </button>
+                                    ))}
                                   </div>
+                                </div>
+                              </div>
 
-                                  {/* Vendedor para este item */}
-                                  <div className={`flex items-center gap-2 p-3 rounded-xl border ${categoryFound ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30' : 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30'}`}>
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-xs ${categoryFound ? 'bg-gradient-to-br from-purple-400 to-pink-400' : 'bg-gradient-to-br from-yellow-400 to-orange-400'}`}>
-                                      {sellerAvatar}
+                              {/* Coluna 2: Informações do Cliente e Entrega */}
+                              <div className="space-y-6">
+                                <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
+                                  <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <User className="w-4 h-4" /> Cliente
+                                  </h4>
+                                  <div className="space-y-3">
+                                    <div>
+                                      <p className="text-gray-500 text-[10px] uppercase font-bold">Nome Completo</p>
+                                      <p className="text-white text-sm font-semibold">{order.customer.name}</p>
                                     </div>
-                                    <div className="flex-1">
-                                      <span className={`font-semibold text-sm ${categoryFound ? 'text-white' : 'text-yellow-200'}`}>
-                                        Vendedor: <span className={categoryFound ? 'text-purple-300' : 'text-yellow-300'}>{sellerName}</span>
-                                      </span>
-                                      <p className={`text-xs ${categoryFound ? 'text-purple-200' : 'text-yellow-200'}`}>{item.category || 'Sem categoria'}</p>
+                                    <div>
+                                      <p className="text-gray-500 text-[10px] uppercase font-bold">E-mail</p>
+                                      <p className="text-white text-sm font-semibold truncate">{order.customer.email}</p>
                                     </div>
-                                    {itemSeller && (
-                                      <span className="text-xs text-purple-300 ml-auto">📞 {itemSeller.phone}</span>
+                                    <div className="flex justify-between">
+                                      <div>
+                                        <p className="text-gray-500 text-[10px] uppercase font-bold">Telefone</p>
+                                        <p className="text-white text-sm font-semibold">{order.customer.phone}</p>
+                                      </div>
+                                      {order.customer.cpf_cnpj && (
+                                        <div>
+                                          <p className="text-gray-500 text-[10px] uppercase font-bold">CPF/CNPJ</p>
+                                          <p className="text-white text-sm font-semibold">{order.customer.cpf_cnpj}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
+                                  <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Truck className="w-4 h-4" /> Logística
+                                  </h4>
+                                  <div className="space-y-3">
+                                    <div>
+                                      <p className="text-gray-500 text-[10px] uppercase font-bold">Método</p>
+                                      <p className="text-yellow-400 text-sm font-bold flex items-center gap-2">
+                                        {order.shippingMethod === "retirada" ? "🏪 RETIRADA NO LOCAL" : "🚚 ENTREGA TRANSPORTADORA"}
+                                      </p>
+                                    </div>
+                                    {order.address && (
+                                      <div>
+                                        <p className="text-gray-500 text-[10px] uppercase font-bold">Endereço de Entrega</p>
+                                        <p className="text-white text-xs font-medium leading-relaxed mt-1">
+                                          {order.address.rua}, {order.address.numero}<br/>
+                                          {order.address.bairro} - {order.address.city}/{order.address.estado}<br/>
+                                          CEP: {order.address.cep}
+                                        </p>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Grid de Informações Laterais */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {/* Cliente */}
-                          <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                            <p className="text-gray-400 text-xs font-bold uppercase mb-3">Contato do Cliente</p>
-                            <div className="space-y-2">
-                              <div>
-                                <p className="text-gray-500 text-xs">Nome</p>
-                                <p className="text-white text-sm font-semibold">{order.customer.name}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-xs">Email</p>
-                                <p className="text-white text-sm font-semibold truncate">{order.customer.email}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-xs">Telefone</p>
-                                <p className="text-white text-sm font-semibold">{order.customer.phone}</p>
-                              </div>
-                              {order.customer.cpf_cnpj && (
-                                <div>
-                                  <p className="text-gray-500 text-xs">CPF/CNPJ</p>
-                                  <p className="text-white text-sm font-semibold">{order.customer.cpf_cnpj}</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Entrega/Retirada */}
-                          <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                            <p className="text-gray-400 text-xs font-bold uppercase mb-3">Logística</p>
-                            <div className="space-y-2">
-                              <div>
-                                <p className="text-gray-500 text-xs">Tipo de Entrega</p>
-                                <p className={`text-sm font-bold ${order.shippingMethod === "retirada" ? "text-amber-400" : "text-cyan-400"}`}>
-                                  {order.shippingMethod === "retirada" ? "🏪 Retirada no Local" : "🚚 Entrega via Transportadora"}
-                                </p>
-                              </div>
-                              {order.shippingMethod === "entrega" && order.address ? (
-                                <div>
-                                  <p className="text-gray-500 text-xs">Endereço</p>
-                                  <p className="text-white text-sm font-semibold">
-                                    {order.address.rua}, {order.address.numero}
-                                    {order.address.complemento ? ` - ${order.address.complemento}` : ""}
-                                  </p>
-                                  <p className="text-gray-400 text-xs">
-                                    {order.address.bairro} - {order.address.city}/{order.address.estado}
-                                  </p>
-                                  <p className="text-gray-400 text-xs">CEP: {order.address.cep}</p>
-                                </div>
-                              ) : order.shippingMethod === "retirada" ? (
-                                <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                                  <p className="text-amber-200 text-xs italic">O cliente virá buscar o pedido.</p>
-                                </div>
-                              ) : (
-                                <p className="text-gray-500 text-xs italic">Sem informações de endereço</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Detalhes do Pedido */}
-                          <div className="md:col-span-2 lg:col-span-1 bg-white/5 rounded-2xl p-4 border border-white/10">
-                            <p className="text-gray-400 text-xs font-bold uppercase mb-3">Detalhes</p>
-                            <div className="space-y-2">
-                              <div>
-                                <p className="text-gray-500 text-xs">Data do Pedido</p>
-                                <p className="text-white text-sm font-semibold">{new Date(order.date).toLocaleDateString("pt-BR")}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-xs">Ano do Veículo</p>
-                                <p className="text-white text-sm font-semibold">{order.ano_veiculo || "Não informado"}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-xs">Método de Pagamento</p>
-                                <p className="text-white text-sm font-semibold">
-                                  {order.paymentMethod === "pix" ? "🔐 PIX" : "💳 Cartão"}
-                                  {order.cartao_final && ` (Final ${order.cartao_final})`}
-                                </p>
                               </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-
-                      {/* Footer com Ações */}
-                      <div className="px-6 py-4 border-t border-white/10 bg-gradient-to-r from-transparent to-slate-800/20 flex flex-col sm:flex-row items-center gap-3">
-                        <select
-                          value={selectedOrderStatus[order.id] || order.status}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          className="flex-1 px-4 py-3 rounded-xl bg-slate-700 border-2 border-cyan-500/50 text-white font-semibold focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30 transition-all hover:bg-slate-600 cursor-pointer appearance-none"
-                        >
-                          <option value="pendente">🕐 Aguardando Pagamento</option>
-                          <option value="pago">✅ Pagamento Aprovado</option>
-                          <option value="confirmado">🛠️ Em Produção</option>
-                          <option value="enviado">📦 Enviado</option>
-                          <option value="entregue">🎉 Entregue</option>
-                          <option value="cancelado">❌ Cancelado</option>
-                        </select>
-                        <button
-                          onClick={() => downloadOrder(order.id)}
-                          className="p-3 hover:bg-green-500/20 rounded-xl transition-all border border-white/10 hover:border-green-500/30 hover:scale-110 active:scale-95"
-                          title="Baixar pedido para produção"
-                        >
-                          <Download className="w-5 h-5 text-green-400" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteOrder(order.id)}
-                          className="p-3 hover:bg-red-500/20 rounded-xl transition-all border border-white/10 hover:border-red-500/30 hover:scale-110 active:scale-95"
-                          title="Deletar pedido"
-                        >
-                          <Trash2 className="w-5 h-5 text-red-400" />
-                        </button>
-                      </div>
-                    </div>
-                    );
-                })}
-              </div>
-            )}
+                    ))
+                )}
+            </div>
           </div>
-        )}        {/* Products Tab */}
+        )}
         {/* Products Tab */}
         {activeTab === "products" && (
           <div className="space-y-6">
@@ -1173,9 +1401,9 @@ const Dashboard = () => {
                               setEditingProduct(product as any);
                               setShowProductForm(true);
                             }}
-                            className="p-2 hover:bg-cyan-500/20 rounded-lg transition-all border border-white/10 hover:border-cyan-500/30"
+                            className="p-2 hover:bg-green-500/20 rounded-lg transition-all border border-white/10 hover:border-green-500/30"
                           >
-                            <Edit className="w-5 h-5 text-cyan-400" />
+                            <Edit className="w-5 h-5 text-yellow-400" />
                           </button>
                           <button
                             onClick={() => deleteProduct(product.id)}
@@ -1319,7 +1547,7 @@ const Dashboard = () => {
                           </div>
                           <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                             <p className="text-gray-500 text-xs font-bold mb-1">Itens</p>
-                            <p className="text-cyan-400 font-black text-lg">{sellerItemsCount}</p>
+                            <p className="text-yellow-400 font-black text-lg">{sellerItemsCount}</p>
                           </div>
                           <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                             <p className="text-gray-500 text-xs font-bold mb-1">Vendas</p>
@@ -1348,95 +1576,219 @@ const Dashboard = () => {
 
         {/* Categories Tab */}
         {activeTab === "categories" && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Ticket className="w-6 h-6" />
-                Gerenciar Categorias & Subcategorias
-              </h2>
+              <div>
+                <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                  <Filter className="w-8 h-8 text-cyan-400" />
+                  Categorias e Subcategorias
+                </h2>
+                <p className="text-slate-400 mt-2">Gerencie a árvore de categorias da sua loja.</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => {
+                    const name = prompt("Nome da Categoria (Ex: 🏆 Kit Completo)");
+                    const key = prompt("Chave/ID da Categoria (Ex: completo)");
+                    if (name && key) {
+                      addCategory({ name, key });
+                    }
+                  }}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Categoria Pai
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Categorias */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-bold">Categorias ({categories.length})</h3>
-                  <Button 
-                    onClick={() => {
-                      const name = prompt("Nome da Categoria (Ex: 🏆 Kit Completo)");
-                      const key = prompt("Chave/ID da Categoria (Ex: completo)");
-                      if (name && key) {
-                        addCategory({ name, key });
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white text-xs"
-                  >
-                    + Categoria
-                  </Button>
-                </div>
-                <div className="space-y-2 overflow-y-auto max-h-[400px]">
+            <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 overflow-hidden">
+              <div className="p-6">
+                <div className="space-y-4">
                   {categories.map((cat) => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                      <div className="flex flex-col">
-                        <span className="text-white font-semibold">{cat.name}</span>
-                        <span className="text-gray-500 text-xs">key: {cat.key}</span>
+                    <div key={cat.id} className="bg-slate-900/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                      <div className="p-4 flex flex-wrap items-center justify-between gap-4 bg-slate-800/20">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-cyan-900/30 rounded-lg flex items-center justify-center border border-cyan-500/20 text-cyan-400 font-bold">
+                            {cat.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h3 className="text-white font-bold text-lg">{cat.name}</h3>
+                            <p className="text-slate-500 text-xs font-mono">key: {cat.key}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const name = prompt(`Nova Subcategoria para ${cat.name}:`);
+                              if (name) {
+                                addSubcategory({ name, categoryId: cat.id });
+                              }
+                            }}
+                            className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                          >
+                            + Subcategoria
+                          </Button>
+                          <button 
+                            onClick={() => deleteCategory(cat.id)}
+                            className="p-2 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"
+                            title="Deletar Categoria Pai"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => deleteCategory(cat.id)}
-                          className="p-1 hover:bg-red-500/20 rounded text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      
+                      {/* Subcategorias Relacionadas */}
+                      <div className="p-4 bg-slate-900/50 border-t border-slate-800">
+                        {subcategories.filter(s => s.categoryId === cat.id).length === 0 ? (
+                          <p className="text-slate-500 text-sm italic">Nenhuma subcategoria vinculada.</p>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {subcategories.filter(s => s.categoryId === cat.id).map(sub => (
+                              <div key={sub.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg border border-slate-700">
+                                <span className="text-slate-300 text-sm font-medium">{sub.name}</span>
+                                <button 
+                                  onClick={() => deleteSubcategory(sub.id)}
+                                  className="p-1 hover:bg-red-500/20 rounded text-red-400 transition-colors"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Subcategorias */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-bold">Subcategorias ({subcategories.length})</h3>
-                  <Button 
-                    onClick={() => {
-                      const name = prompt("Nome da Subcategoria");
-                      const categoryId = prompt("ID da Categoria Pai (Copie de uma categoria acima)");
-                      if (name && categoryId) {
-                        addSubcategory({ name, categoryId });
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white text-xs"
-                  >
-                    + Subcategoria
-                  </Button>
+            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 flex gap-3 items-start">
+              <Info className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <p className="text-cyan-300 text-sm">
+                <strong>Dica:</strong> As categorias e subcategorias são usadas dinamicamente para gerar o menu de filtros da loja. Use nomes curtos e amigáveis (Ex: "Kit Completo").
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Financeiro Tab */}
+        {activeTab === "financeiro" && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                <DollarSign className="w-8 h-8 text-green-400" />
+                Relatório Financeiro
+              </h2>
+              <div className="flex gap-3">
+                <Button variant="outline" className="border-white/10 text-white bg-white/5">
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar PDF
+                </Button>
+              </div>
+            </div>
+
+            {/* Stats Grid Financeiro */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 rounded-3xl p-8 border border-green-500/30 backdrop-blur-xl">
+                <p className="text-green-400 text-xs font-black uppercase tracking-widest mb-2">Faturamento Aprovado</p>
+                <p className="text-4xl font-black text-white">{formatCurrency(stats.totalSales)}</p>
+                <div className="mt-4 flex items-center gap-2 text-green-400 text-sm font-bold">
+                  <TrendingUp className="w-4 h-4" />
+                  +12.5% vs mês passado
                 </div>
-                <div className="space-y-2 overflow-y-auto max-h-[400px]">
-                  {subcategories.map((sub) => {
-                    const cat = categories.find(c => c.id === sub.categoryId);
+              </div>
+
+              <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 rounded-3xl p-8 border border-yellow-500/30 backdrop-blur-xl">
+                <p className="text-yellow-400 text-xs font-black uppercase tracking-widest mb-2">Potencial de Vendas (Pendente)</p>
+                <p className="text-4xl font-black text-white">{formatCurrency(stats.totalPotential - stats.totalSales)}</p>
+                <p className="mt-4 text-yellow-500/70 text-sm font-medium">
+                  {stats.pendingOrders} pedidos aguardando pagamento
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 rounded-3xl p-8 border border-blue-500/30 backdrop-blur-xl">
+                <p className="text-blue-400 text-xs font-black uppercase tracking-widest mb-2">Ticket Médio</p>
+                <p className="text-4xl font-black text-white">
+                  {formatCurrency(stats.totalSales / (orders.filter(o => o.status === 'pago').length || 1))}
+                </p>
+                <p className="mt-4 text-blue-500/70 text-sm font-medium">Baseado em pedidos pagos</p>
+              </div>
+            </div>
+
+            {/* Detailed Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+                <h3 className="text-white font-bold text-xl mb-6">Conversão de Pagamentos</h3>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-400">PIX</span>
+                      <span className="text-white font-bold">
+                        {orders.filter(o => o.paymentMethod === 'pix' && o.status === 'pago').length} de {orders.filter(o => o.paymentMethod === 'pix').length}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 transition-all duration-1000" 
+                        style={{ width: `${(orders.filter(o => o.paymentMethod === 'pix' && o.status === 'pago').length / (orders.filter(o => o.paymentMethod === 'pix').length || 1)) * 100}%` }} 
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-400">Cartão de Crédito</span>
+                      <span className="text-white font-bold">
+                        {orders.filter(o => o.paymentMethod === 'cartao' && o.status === 'pago').length} de {orders.filter(o => o.paymentMethod === 'cartao').length}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 transition-all duration-1000" 
+                        style={{ width: `${(orders.filter(o => o.paymentMethod === 'cartao' && o.status === 'pago').length / (orders.filter(o => o.paymentMethod === 'cartao').length || 1)) * 100}%` }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-12 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl">
+                  <h4 className="text-green-400 font-bold mb-2">💡 Dica Estratégica</h4>
+                  <p className="text-green-300/80 text-sm">
+                    Pedidos PIX pendentes costumam ser pagos em até 24h. Use o botão <strong>Sincronizar MP</strong> para atualizar o status instantaneamente se o cliente confirmar o pagamento.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabela de Receita por Categoria */}
+              <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+                <h3 className="text-white font-bold text-xl mb-6">Receita por Categoria</h3>
+                <div className="space-y-4">
+                  {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+                    const totalCat = orders
+                      .filter(o => o.status === 'pago')
+                      .reduce((sum, o) => {
+                        const itemTotal = o.items
+                          .filter(i => i.category === key)
+                          .reduce((iSum, i) => iSum + (i.price * i.quantity), 0);
+                        return sum + itemTotal;
+                      }, 0);
+                    
+                    if (totalCat === 0) return null;
+
                     return (
-                      <div key={sub.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                        <div className="flex flex-col">
-                          <span className="text-white font-semibold">{sub.name}</span>
-                          <span className="text-cyan-400 text-xs">{cat?.name || "Sem categoria"}</span>
-                        </div>
-                        <button 
-                          onClick={() => deleteSubcategory(sub.id)}
-                          className="p-1 hover:bg-red-500/20 rounded text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div key={key} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span className="text-gray-300 font-medium">{label}</span>
+                        <span className="text-white font-black">{formatCurrency(totalCat)}</span>
                       </div>
                     );
                   })}
                 </div>
               </div>
-            </div>
-
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-              <p className="text-blue-300 text-xs">
-                💡 <strong>Dica:</strong> As chaves (key) são usadas internamente para organizar as categorias. Certifique-se de usar nomes sem espaços ou acentos para a Chave (ex: `kits-completos`).
-              </p>
             </div>
           </div>
         )}
@@ -1513,7 +1865,7 @@ const Dashboard = () => {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <code className="text-2xl font-bold text-cyan-400 font-mono">
+                          <code className="text-2xl font-bold text-yellow-400 font-mono">
                             {coupon.code}
                           </code>
                           <button
@@ -1522,7 +1874,7 @@ const Dashboard = () => {
                               setCopiedCoupon(coupon.id);
                               setTimeout(() => setCopiedCoupon(null), 2000);
                             }}
-                            className="p-2 hover:bg-cyan-500/20 rounded-lg transition-all"
+                            className="p-2 hover:bg-green-500/20 rounded-lg transition-all"
                           >
                             {copiedCoupon === coupon.id ? (
                               <Check className="w-4 h-4 text-green-400" />
@@ -1575,9 +1927,9 @@ const Dashboard = () => {
                             setEditingCoupon(coupon as any);
                             setShowCouponForm(true);
                           }}
-                          className="p-2 hover:bg-cyan-500/20 rounded-lg transition-all border border-white/10 hover:border-cyan-500/30"
+                          className="p-2 hover:bg-green-500/20 rounded-lg transition-all border border-white/10 hover:border-green-500/30"
                         >
-                          <Edit className="w-5 h-5 text-cyan-400" />
+                          <Edit className="w-5 h-5 text-yellow-400" />
                         </button>
                         <button
                           onClick={() => deleteCoupon(coupon.id)}
@@ -1630,11 +1982,11 @@ const Dashboard = () => {
       {showDownloadModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-white/10 max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-4 border-b border-white/10">
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-4 border-b border-white/10">
               <h3 className="text-xl font-bold text-white flex items-center gap-3">
                 <span>📄</span> Escolha o Tipo de Documento
               </h3>
-              <p className="text-cyan-100 text-sm mt-1">Qual documento deseja gerar?</p>
+              <p className="text-green-100 text-sm mt-1">Qual documento deseja gerar?</p>
             </div>
 
             <div className="p-6 space-y-4">
@@ -1644,7 +1996,7 @@ const Dashboard = () => {
                   const order = orders.find(o => o.id === showDownloadModal);
                   if (order) openOrderDocument(order, "financeiro");
                 }}
-                className="w-full p-4 rounded-xl border border-white/20 hover:border-cyan-400/50 hover:bg-cyan-500/10 transition-all duration-300 text-left group"
+                className="w-full p-4 rounded-xl border border-white/20 hover:border-yellow-400/50 hover:bg-green-500/10 transition-all duration-300 text-left group"
               >
                 <div className="flex items-start gap-4">
                   <div className="text-2xl">💰</div>
@@ -1654,7 +2006,7 @@ const Dashboard = () => {
                       Relatório completo com preços, subtotais e total do pedido. Para setor financeiro.
                     </p>
                   </div>
-                  <div className="text-xl text-cyan-400 opacity-0 group-hover:opacity-100 transition">→</div>
+                  <div className="text-xl text-yellow-400 opacity-0 group-hover:opacity-100 transition">→</div>
                 </div>
               </button>
 
@@ -1693,6 +2045,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

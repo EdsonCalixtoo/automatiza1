@@ -2,10 +2,8 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, Headphones } from "lucide-react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 const Contact = () => {
-  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -49,16 +47,16 @@ const Contact = () => {
   return (
     <Layout>
       {/* Header */}
-      <section className="pt-28 pb-16 bg-gradient-to-b from-cyan-50 to-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <section className="pt-44 pb-16 bg-gradient-to-b from-blue-50 to-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h1 className="font-heading text-5xl md:text-6xl font-bold text-gray-900">
-              {t("contact.title")}
+              Entre em Contato
             </h1>
             <p className="text-xl text-gray-600">
-              {t("contact.subtitle")}
+              Estamos prontos para atender você e tirar todas as suas dúvidas
             </p>
           </div>
         </div>
@@ -72,10 +70,11 @@ const Contact = () => {
             <div className="space-y-8">
               <div>
                 <h2 className="font-heading text-3xl font-bold text-gray-900 mb-4">
-                  {t("contact.channels_title")}
+                  Canais de Atendimento
                 </h2>
                 <p className="text-gray-600">
-                  {t("contact.channels_subtitle")}
+                  Entre em contato através de um dos nossos canais de atendimento. 
+                  Teremos prazer em ajudá-lo!
                 </p>
               </div>
 
@@ -86,13 +85,13 @@ const Contact = () => {
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 p-6 bg-card rounded-2xl shadow-card hover:shadow-lg transition-all duration-300 group border border-transparent hover:border-primary/20"
                 >
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-600/50">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-green-600/50">
                     <MessageCircle className="w-7 h-7 text-white" />
                   </div>
                   <div>
                     <h3 className="font-heading font-semibold text-foreground text-lg">WhatsApp</h3>
                     <p className="text-primary font-semibold">(19) 98942-9972</p>
-                    <p className="text-muted-foreground text-sm mt-1">{t("contact.whatsapp_desc")}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Resposta rápida</p>
                   </div>
                 </a>
 
@@ -104,9 +103,9 @@ const Contact = () => {
                     <Phone className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-foreground text-lg">{t("header.contact")}</h3>
+                    <h3 className="font-heading font-semibold text-foreground text-lg">Telefone</h3>
                     <p className="text-primary font-semibold">(19) 98942-9972</p>
-                    <p className="text-muted-foreground text-sm mt-1">{t("contact.phone_desc")}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Ligue agora</p>
                   </div>
                 </a>
 
@@ -120,7 +119,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-heading font-semibold text-foreground text-lg">E-mail</h3>
                     <p className="text-primary font-semibold">contato@grupoautomatiza.com.br</p>
-                    <p className="text-muted-foreground text-sm mt-1">{t("contact.email_desc")}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Respondemos em até 24h</p>
                   </div>
                 </a>
 
@@ -129,9 +128,9 @@ const Contact = () => {
                     <MapPin className="w-7 h-7 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-foreground text-lg">{t("contact.location_title")}</h3>
+                    <h3 className="font-heading font-semibold text-foreground text-lg">Localização</h3>
                     <p className="text-muted-foreground">Campinas - SP, Brasil</p>
-                    <p className="text-muted-foreground text-sm mt-1">{t("contact.location_desc")}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Atendemos todo o Brasil</p>
                   </div>
                 </div>
 
@@ -140,9 +139,9 @@ const Contact = () => {
                     <Clock className="w-7 h-7 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-foreground text-lg">{t("contact.hours_title")}</h3>
-                    <p className="text-muted-foreground">{t("contact.hours_mon_fri")}</p>
-                    <p className="text-muted-foreground">{t("contact.hours_sat")}</p>
+                    <h3 className="font-heading font-semibold text-foreground text-lg">Horário de Atendimento</h3>
+                    <p className="text-muted-foreground">Segunda a Sexta: 8h às 18h</p>
+                    <p className="text-muted-foreground">Sábado: 8h às 12h</p>
                   </div>
                 </div>
               </div>
@@ -151,22 +150,22 @@ const Contact = () => {
             {/* Contact Form */}
             <div className="bg-card rounded-3xl p-8 md:p-10 shadow-card border border-border">
               <h2 className="font-heading text-2xl font-bold text-foreground mb-2">
-                {t("contact.form_title")}
+                Envie uma Mensagem
               </h2>
               <p className="text-muted-foreground mb-6">
-                {t("contact.form_subtitle")}
+                Preencha o formulário e entraremos em contato
               </p>
               
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    {t("contact.label_name")}
+                    Nome Completo
                   </label>
                   <input
                     type="text"
                     required
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    placeholder={t("contact.placeholder_name")}
+                    placeholder="Seu nome"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -175,26 +174,26 @@ const Contact = () => {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      {t("contact.label_email")}
+                      E-mail
                     </label>
                     <input
                       type="email"
                       required
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder={t("contact.placeholder_email")}
+                      placeholder="seu@email.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      {t("contact.label_phone")}
+                      Telefone
                     </label>
                     <input
                       type="tel"
                       required
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder={t("contact.placeholder_phone")}
+                      placeholder="(19) 99691-2323"
                       value={formData.phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
                     />
@@ -203,25 +202,25 @@ const Contact = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    {t("contact.label_message")}
+                    Mensagem
                   </label>
                   <textarea
                     required
                     rows={5}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
-                    placeholder={t("contact.placeholder_message")}
+                    placeholder="Descreva como podemos ajudá-lo..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   />
                 </div>
 
                 <Button type="submit" variant="hero" size="xl" className="w-full group">
-                  {t("contact.button_submit")}
+                  Enviar via WhatsApp
                   <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  {t("contact.form_footer")}
+                  Ao enviar, você será redirecionado para o WhatsApp
                 </p>
               </form>
             </div>

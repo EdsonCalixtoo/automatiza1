@@ -1,25 +1,22 @@
-import { Link, useSearchParams, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { CartNotification } from "@/components/cart/CartNotification";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/contexts/ProductContext";
 import { CATEGORY_LOGOS } from "@/data/brandLogos";
-import { Package, Zap, ShoppingCart, ChevronDown, Filter, X, Star } from "lucide-react";
+import { Package, Zap, ShoppingCart, ChevronDown, Filter, X, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/utils";
 
-const Products = () => {
-  const { t, i18n } = useTranslation();
-  const { lang } = useParams();
-  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
-  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
+const cleanName = (name: string) => name ? name.replace(/^[\p{Emoji}\s]+/gu, '') : '';
 
+const Products = () => {
   const [searchParams] = useSearchParams();
   const vehicleParam = searchParams.get("vehicle");
-  const { products } = useProducts();
+  const searchParam = searchParams.get("search");
+  const { products, categories, subcategories } = useProducts();
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [addedToCart, setAddedToCart] = useState<{
@@ -37,113 +34,62 @@ const Products = () => {
     }
   }, [vehicleParam]);
 
-  // Define categories and subcategories structure
-  const categoryStructure: Record<string, { label: string; icon: string; subcategories: string[] }> = {
-    "citroen-jumper": { 
-      label: t("categories.jumper"), 
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
-    },
-    "citroen-jumpy": {
-      label: t("categories.jumpy"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "fiat-ducato": {
-      label: t("categories.ducato"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
-    },
-    "fiat-scudo": {
-      label: t("categories.scudo"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "ford-transit": {
-      label: t("categories.transit"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "iveco-daily": {
-      label: t("categories.daily"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
-    },
-    "kia-besta": {
-      label: t("categories.besta"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
-    },
-    "mercedes-sprinter": {
-      label: t("categories.sprinter"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "peugeot-boxer": {
-      label: t("categories.boxer"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "peugeot-expert": {
-      label: t("categories.expert"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "renault-master": {
-      label: t("categories.master"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor")]
-    },
-    "vw-kombi": {
-      label: t("categories.kombi"),
-      icon: "🚐",
-      subcategories: [t("categories.with_sensor"), t("categories.without_sensor"), t("categories.abnt")]
-    },
-  };
-
-  const otherCategories = [
-    { id: "completo", label: t("categories.complete_kit"), icon: "🏆" },
-    { id: "simples", label: t("categories.simple_kit"), icon: "⚡" },
-    { id: "consumivel", label: t("categories.consumables"), icon: "🔧" },
-  ];
+  // Categorias dinâmicas
+  const vehicleCategories = categories.filter(c => subcategories.some(s => s.categoryId === c.id) && !c.name.includes("Peças")).sort((a, b) => a.name.localeCompare(b.name));
+  const otherCategoriesDynamic = categories.filter(c => !subcategories.some(s => s.categoryId === c.id));
+  const pecasCategory = categories.find(c => c.name.includes("Peças"));
 
   const filteredProducts = products.filter(p => {
+    // If a search parameter exists, enforce it
+    if (searchParam) {
+      const searchLower = searchParam.toLowerCase();
+      const matchesName = p.name.toLowerCase().includes(searchLower);
+      const matchesSubcat = p.subcategory?.toLowerCase().includes(searchLower);
+      const matchesCat = p.category?.toLowerCase().includes(searchLower);
+      
+      if (!matchesName && !matchesSubcat && !matchesCat) {
+        return false;
+      }
+    }
+
     if (selectedCategory === "all") return true;
     
-    // Se a categoria selecionada for um veículo (do categoryStructure)
-    if (categoryStructure[selectedCategory]) {
-      const catData = categoryStructure[selectedCategory];
+    // Se a categoria selecionada for um veículo (dinâmica)
+    const isVehicleCategory = vehicleCategories.some(c => c.key === selectedCategory);
+    if (isVehicleCategory) {
+      const catData = categories.find(c => c.key === selectedCategory);
       const matchesCategory = p.category === selectedCategory || 
-                             p.category === catData.label ||
-                             (p.category === "Portas Automáticas" && p.subcategory === catData.label);
+                             p.category === catData?.name ||
+                             (p.category === "Portas Automáticas" && p.subcategory === catData?.name);
       
       if (!matchesCategory) return false;
       if (selectedSubcategory === "all") return true;
       return p.subcategory === selectedSubcategory;
     }
     
-    // Categorias fixas (Kits, etc)
-    return p.category === selectedCategory;
+    // Categorias fixas (Kits, etc) baseadas no DB
+    const catDataOther = categories.find(c => c.key === selectedCategory);
+    return p.category === selectedCategory || p.category === catDataOther?.name;
+  }).sort((a, b) => {
+    // Ordenar para garantir que "Sem Sensor" venha antes de "Com Sensor"
+    // Como "Sem Sensor" é mais barato, ordenar por preço crescente já resolve perfeitamente
+    // e também é uma ótima prática de e-commerce!
+    return a.price - b.price;
   });
 
   return (
     <Layout>
-      {/* Header */}
-      <section className="pt-40 pb-16 bg-gradient-to-br from-cyan-600 via-cyan-500 to-cyan-600 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      {/* Page Header */}
+      <section className="relative bg-[#0a192f] pt-32 pb-20 overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-[#071936] to-slate-900" />
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="flex items-center justify-center gap-3 text-white/80">
-              <Zap className="w-5 h-5" />
-              <span className="font-semibold">{t("products.full_catalog")}</span>
-            </div>
-            <h1 className="font-heading text-5xl md:text-6xl font-bold text-white">
-              {t("header.products")}
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h1 className="font-heading text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
+              Nossos <span className="text-blue-500">Produtos</span>
             </h1>
-            <p className="text-xl text-white/90 leading-relaxed">
-              {t("products.subtitle")}
+            <p className="text-xl text-slate-400 leading-relaxed font-medium max-w-2xl mx-auto">
+              Tecnologia e segurança para o transporte escolar.
             </p>
           </div>
         </div>
@@ -156,11 +102,11 @@ const Products = () => {
           <div className="lg:hidden mb-6 sticky top-[90px] z-30">
             <button 
               onClick={() => setIsFilterOpen(true)}
-              className="w-full bg-white border-2 border-cyan-100 p-4 rounded-2xl flex items-center justify-between shadow-sm"
+              className="w-full bg-white border-2 border-green-100 p-4 rounded-2xl flex items-center justify-between shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-cyan-600" />
-                <span className="font-bold text-gray-900">{t("products.filter_by")}</span>
+                <Filter className="w-5 h-5 text-green-600" />
+                <span className="font-bold text-gray-900">Filtrar por Veículo</span>
               </div>
               <ChevronDown className="w-5 h-5 text-gray-400" />
             </button>
@@ -182,13 +128,13 @@ const Products = () => {
               )}
               <div className="bg-white rounded-2xl lg:border-2 lg:border-gray-100 lg:p-6 sticky top-24">
                 <div className="flex items-center gap-2 mb-6">
-                  <Filter className="w-5 h-5 text-cyan-600" />
-                  <h2 className="font-heading text-lg font-bold text-gray-900">{t("products.filters")}</h2>
+                  <Filter className="w-5 h-5 text-green-600" />
+                  <h2 className="font-heading text-lg font-bold text-gray-900">Filtros</h2>
                 </div>
 
                 {/* Other Categories */}
                 <div className="mb-8 pb-8 border-b-2 border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">{t("header.products")}</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Kits & Acessórios</h3>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
@@ -198,27 +144,78 @@ const Products = () => {
                       }}
                       className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${
                         selectedCategory === "all"
-                          ? "bg-cyan-600 text-white"
+                          ? "bg-green-600 text-white"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
-                      📦 {t("products.all_products")}
+                      📦 Todos os Produtos
                     </button>
-                    {otherCategories.map((cat) => (
+                    
+                    {/* Peças & Consumíveis (Movido para cá) */}
+                    {pecasCategory && (
+                      <div key={pecasCategory.key}>
+                        <button
+                          onClick={() => {
+                            setExpandedCategory(expandedCategory === pecasCategory.key ? null : pecasCategory.key);
+                            setSelectedCategory(pecasCategory.key);
+                            setSelectedSubcategory("all");
+                          }}
+                          className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${
+                            selectedCategory === pecasCategory.key && selectedSubcategory === "all"
+                              ? "bg-green-100 text-green-700"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span>📦</span>
+                            <span>{cleanName(pecasCategory.name)}</span>
+                          </div>
+                          <ChevronDown 
+                            className={`w-4 h-4 transition-transform flex-shrink-0 ${
+                              expandedCategory === pecasCategory.key ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+                        
+                        {expandedCategory === pecasCategory.key && (
+                          <div className="ml-4 mt-2 space-y-1 border-l-2 border-cyan-200 pl-0">
+                            {subcategories.filter(s => s.categoryId === pecasCategory.id).map((subcat) => (
+                              <button
+                                key={subcat.id}
+                                onClick={() => {
+                                  setSelectedCategory(pecasCategory.key);
+                                  setSelectedSubcategory(subcat.name);
+                                  setIsFilterOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${
+                                  selectedSubcategory === subcat.name
+                                    ? "bg-green-600 text-white"
+                                    : "text-gray-600 hover:bg-gray-100"
+                                }`}
+                              >
+                                {subcat.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {otherCategoriesDynamic.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => {
-                          setSelectedCategory(cat.id);
+                          setSelectedCategory(cat.key);
                           setSelectedSubcategory("all");
                           setIsFilterOpen(false);
                         }}
                         className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${
-                          selectedCategory === cat.id && selectedSubcategory === "all"
-                            ? "bg-cyan-600 text-white"
+                          selectedCategory === cat.key && selectedSubcategory === "all"
+                            ? "bg-green-600 text-white"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
-                        {cat.icon} {cat.label}
+                        {cat.name.includes("Kit") ? "🏆" : "🔧"} {cleanName(cat.name)}
                       </button>
                     ))}
                   </div>
@@ -226,58 +223,58 @@ const Products = () => {
 
                 {/* Door Categories */}
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">{t("products.automatic_doors")}</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">PORTAS AUTOMÁTICAS</h3>
                   <div className="space-y-1">
-                    {Object.entries(categoryStructure).map(([key, catData]) => (
-                      <div key={key}>
+                    {vehicleCategories.map((catData) => (
+                      <div key={catData.key}>
                         <button
                           onClick={() => {
-                            setExpandedCategory(expandedCategory === key ? null : key);
-                            setSelectedCategory(key);
+                            setExpandedCategory(expandedCategory === catData.key ? null : catData.key);
+                            setSelectedCategory(catData.key);
                             setSelectedSubcategory("all");
                           }}
                           className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${
-                            selectedCategory === key && selectedSubcategory === "all"
-                              ? "bg-cyan-100 text-cyan-700"
+                            selectedCategory === catData.key && selectedSubcategory === "all"
+                              ? "bg-green-100 text-green-700"
                               : "text-gray-700 hover:bg-gray-100"
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            {CATEGORY_LOGOS[key] ? (
+                            {CATEGORY_LOGOS[catData.key] ? (
                               <img 
-                                src={CATEGORY_LOGOS[key]} 
-                                alt={catData.label}
+                                src={CATEGORY_LOGOS[catData.key]} 
+                                alt={catData.name}
                                 className="h-6 w-6 object-contain"
                               />
                             ) : (
-                              <span>{catData.icon}</span>
+                              <span>🚐</span>
                             )}
-                            <span>{catData.label}</span>
+                            <span>{cleanName(catData.name)}</span>
                           </div>
                           <ChevronDown 
                             className={`w-4 h-4 transition-transform flex-shrink-0 ${
-                              expandedCategory === key ? "rotate-180" : ""
+                              expandedCategory === catData.key ? "rotate-180" : ""
                             }`}
                           />
                         </button>
                         
-                        {expandedCategory === key && (
+                        {expandedCategory === catData.key && (
                           <div className="ml-4 mt-2 space-y-1 border-l-2 border-cyan-200 pl-0">
-                            {catData.subcategories.map((subcat) => (
+                            {subcategories.filter(s => s.categoryId === catData.id).map((subcat) => (
                               <button
-                                key={subcat}
+                                key={subcat.id}
                                 onClick={() => {
-                                  setSelectedCategory(key);
-                                  setSelectedSubcategory(subcat);
+                                  setSelectedCategory(catData.key);
+                                  setSelectedSubcategory(subcat.name);
                                   setIsFilterOpen(false);
                                 }}
                                 className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${
-                                  selectedSubcategory === subcat
-                                    ? "bg-cyan-600 text-white"
+                                  selectedSubcategory === subcat.name
+                                    ? "bg-green-600 text-white"
                                     : "text-gray-600 hover:bg-gray-100"
                                 }`}
                               >
-                                {subcat}
+                                {subcat.name}
                               </button>
                             ))}
                           </div>
@@ -290,7 +287,7 @@ const Products = () => {
                   <div className="mt-12 lg:hidden">
                     <Button 
                       onClick={() => setIsFilterOpen(false)}
-                      className="w-full bg-cyan-600 py-6 rounded-2xl font-bold"
+                      className="w-full bg-green-600 py-6 rounded-2xl font-bold"
                     >
                       Ver Resultados
                     </Button>
@@ -305,7 +302,7 @@ const Products = () => {
               <div className="mb-12 flex items-center justify-between">
                 <div>
                   <p className="text-gray-600">
-                    {t("products.showing")} <span className="font-bold text-cyan-600">{filteredProducts.length}</span> {t("common.items")}
+                    Mostrando <span className="font-bold text-green-600">{filteredProducts.length}</span> produtos
                   </p>
                 </div>
               </div>
@@ -315,65 +312,68 @@ const Products = () => {
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 transform hover:-translate-y-2 flex flex-col">
                     {/* Image Area */}
-                    <Link to={toL(`/produto/${product.id}`)} className="relative h-60 overflow-hidden bg-gray-50 flex items-center justify-center border-b border-gray-100">
+                    <Link to={`/produto/${product.id}`} className="relative h-60 overflow-hidden bg-gray-50 flex items-center justify-center border-b border-gray-100">
                       <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                        <span className="bg-cyan-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
-                          {product.badge || t("hero.anniversary").split(" ")[0]}
-                        </span>
-                        <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-amber-950 px-3 py-1 rounded-lg text-center text-[9px] font-black uppercase tracking-tighter shadow-lg flex items-center gap-1 border border-amber-400/50">
-                          <Star className="w-3 h-3 fill-amber-950" /> {t("hero.years")}
-                        </span>
+                        {product.badge && (
+                          <span className="bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
+                            {product.badge}
+                          </span>
+                        )}
                       </div>
                       <img 
-                        src={product.image}
+                        src={product.image || (product.category === 'pecas' ? "https://placehold.co/600x600/f8fafc/94a3b8?text=Sem+Foto" : "/ftproduto.jpeg")}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = product.category === 'pecas' ? "https://placehold.co/600x600/f8fafc/94a3b8?text=Sem+Foto" : "/ftproduto.jpeg";
+                        }}
                       />
                     </Link>
 
                     {/* Content */}
                     <div className="p-6 flex flex-col flex-grow">
                       <div className="mb-4">
-                        <Link to={toL(`/produto/${product.id}`)}>
-                          <h3 className="font-heading text-lg font-bold text-gray-900 line-clamp-2 hover:text-cyan-600 transition-colors">
+                        <Link to={`/produto/${product.id}`}>
+                          <h3 className="font-heading text-lg font-bold text-gray-900 line-clamp-2 hover:text-green-600 transition-colors">
                             {product.name}
                           </h3>
                         </Link>
                         <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-                          {product.category}
+                          {categories.find(c => c.key === product.category)?.name || product.category?.replace(/-/g, ' ')}
                         </p>
                       </div>
 
                       {/* Price */}
                       <div className="mb-6">
-                        <div className="flex items-baseline gap-3">
-                          {(product.originalPrice ?? 0) > 0 && (
-                            <span className="text-gray-400 line-through text-xs">
-                              {formatCurrency(product.originalPrice!)}
+                        <div className="flex flex-col">
+                          {(product.originalPrice || 0) > product.price && (
+                            <span className="text-gray-400 line-through text-xs font-medium mb-0.5">
+                              De: {formatCurrency(product.originalPrice || 0)}
                             </span>
                           )}
-                            <div className="flex flex-col">
-                             <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest mb-0.5 animate-pulse">✨ {t("hero.anniversary")}</span>
-                             <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-400">
-                               {formatCurrency(product.price)}
-                             </span>
-                           </div>
+                          <div className="flex items-baseline gap-2">
+                            {(product.originalPrice || 0) > product.price && (
+                              <span className="text-sm font-bold text-gray-500">Por:</span>
+                            )}
+                            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-500">
+                              {formatCurrency(product.price)}
+                            </span>
+                          </div>
                         </div>
-                        {(product.originalPrice ?? 0) > 0 && (
-                          <span className="text-[10px] text-green-600 font-bold mt-1">
-                            {t("products.save")} {formatCurrency(product.originalPrice! - product.price)}
-                          </span>
-                        )}
                       </div>
 
                       {/* Buttons */}
                       <div className="mt-auto space-y-2">
                         <button
                           onClick={() => {
+                            let finalPrice = product.price;
+                            if (product.name.toLowerCase().includes("sem sensor")) finalPrice = 1430;
+                            else if (product.name.toLowerCase().includes("com sensor")) finalPrice = 1750;
+                            
                             addToCart({
                               id: product.id,
                               name: product.name,
-                              price: product.price,
+                              price: finalPrice,
                               image: product.image,
                               quantity: 1,
                               category: product.category || "",
@@ -382,16 +382,16 @@ const Products = () => {
                           }}
                           className={`w-full h-12 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md ${
                             addedToCart[product.id]
-                              ? "bg-green-600 text-white"
-                              : "bg-slate-900 text-white hover:bg-cyan-600"
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-900 text-white hover:bg-blue-600"
                           }`}
                         >
                           <ShoppingCart className="w-4 h-4" />
-                          {addedToCart[product.id] ? t("common.added") : t("home.buy_now")}
+                          {addedToCart[product.id] ? "ADICIONADO" : "COMPRAR AGORA"}
                         </button>
-                        <Link to={toL(`/produto/${product.id}`)} className="block">
-                          <button className="w-full h-11 border-2 border-slate-100 text-slate-500 hover:border-cyan-100 hover:text-cyan-600 hover:bg-cyan-50 font-bold rounded-xl text-xs transition-all duration-300 uppercase tracking-widest">
-                            {t("home.more_details")}
+                        <Link to={`/produto/${product.id}`} className="block">
+                          <button className="w-full h-11 border-2 border-slate-100 text-slate-500 hover:border-blue-100 hover:text-blue-600 hover:bg-blue-50 font-bold rounded-xl text-xs transition-all duration-300 uppercase tracking-widest">
+                            Ver detalhes
                           </button>
                         </Link>
                       </div>
@@ -404,7 +404,7 @@ const Products = () => {
               {filteredProducts.length === 0 && (
                 <div className="text-center py-20">
                   <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg font-medium">{t("products.no_products")}</p>
+                  <p className="text-gray-600 text-lg font-medium">Nenhum produto encontrado nesta categoria</p>
                 </div>
               )}
             </div>

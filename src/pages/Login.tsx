@@ -6,17 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail, Lock, Zap, ShieldCheck, Truck, Award } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
-  const { t, i18n } = useTranslation();
-  const { lang } = useParams();
-  const currentLang = lang || i18n.language.split('-')[0] || 'pt';
-  const toL = (path: string) => `/${currentLang}${path === '/' ? '' : path}`;
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -55,7 +48,7 @@ export default function Login() {
     if (error) {
       setError(error.message);
     } else {
-      navigate(toL("/minha-conta"));
+      navigate("/minha-conta");
     }
     setLoading(false);
   };
@@ -67,7 +60,7 @@ export default function Login() {
 
     if (!isLogin) {
       if (!name || !phone || !cpf) {
-        setError(t("login.error_all_fields"));
+        setError("Por favor, preencha todos os campos obrigatórios");
         setLoading(false);
         return;
       }
@@ -77,13 +70,13 @@ export default function Login() {
     if (error) {
       setError(error.message);
     } else {
-      setError(t("login.success_verify_email"));
+      setError("✅ Verifique seu email para confirmar sua conta!");
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Elementos de fundo decorativos */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-200/20 to-blue-200/20 rounded-full blur-3xl"></div>
@@ -95,22 +88,22 @@ export default function Login() {
         {/* Lado Esquerdo - Informações */}
         <div className="hidden lg:flex flex-col justify-center items-start">
           <div className="animate-fade-in">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-              {t("login.title_welcome")}
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+              Bem-vindo à Automatiza
             </h1>
             <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-              {t("login.description")}
+              Acesse sua conta para gerenciar pedidos, acompanhar envios e aproveitar ofertas exclusivas.
             </p>
 
             {/* Cards de Benefícios */}
             <div className="space-y-4">
-              <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-cyan-100/50 hover:border-cyan-300/50 transition-all hover:shadow-lg">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-lg flex items-center justify-center">
-                  <ShieldCheck className="w-6 h-6 text-cyan-600" />
+              <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100/50 hover:border-cyan-300/50 transition-all hover:shadow-lg">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{t("login.benefit_security_title")}</h3>
-                  <p className="text-sm text-gray-600">{t("login.benefit_security_desc")}</p>
+                  <h3 className="font-semibold text-gray-900">Segurança</h3>
+                  <p className="text-sm text-gray-600">Dados protegidos com criptografia</p>
                 </div>
               </div>
 
@@ -119,8 +112,8 @@ export default function Login() {
                   <Truck className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{t("login.benefit_shipping_title")}</h3>
-                  <p className="text-sm text-gray-600">{t("login.benefit_shipping_desc")}</p>
+                  <h3 className="font-semibold text-gray-900">Frete Rápido</h3>
+                  <p className="text-sm text-gray-600">Entrega em todo Brasil</p>
                 </div>
               </div>
 
@@ -129,8 +122,8 @@ export default function Login() {
                   <Award className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{t("login.benefit_warranty_title")}</h3>
-                  <p className="text-sm text-gray-600">{t("login.benefit_warranty_desc")}</p>
+                  <h3 className="font-semibold text-gray-900">Garantia</h3>
+                  <p className="text-sm text-gray-600">Proteção de até 24 meses</p>
                 </div>
               </div>
             </div>
@@ -143,17 +136,17 @@ export default function Login() {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-blue-600 rounded-xl flex items-center justify-center">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {isLogin ? t("login.form_login_title") : t("login.form_signup_title")}
+                  {isLogin ? "Faça Login" : "Criar Conta"}
                 </h2>
               </div>
               <p className="text-gray-600">
                 {isLogin
-                  ? t("login.form_login_desc")
-                  : t("login.form_signup_desc")}
+                  ? "Entre com suas credenciais para acessar sua conta"
+                  : "Preencha os dados abaixo para criar sua conta"}
               </p>
             </div>
 
@@ -171,19 +164,19 @@ export default function Login() {
               {!isLogin && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
                   <Label htmlFor="name" className="text-gray-700 font-semibold">
-                    {t("login.label_name")}
+                    Nome Completo
                   </Label>
                   <div className="relative">
                     <Zap className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                     <Input
                       id="name"
                       type="text"
-                      placeholder={t("login.placeholder_name")}
+                      placeholder="João Silva"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                       disabled={loading}
-                      className="pl-10 h-11 border-gray-300 border-2 focus:border-cyan-500 focus:ring-cyan-500 rounded-lg transition-all"
+                      className="pl-10 h-11 border-gray-300 border-2 focus:border-green-500 focus:ring-green-500 rounded-lg transition-all"
                     />
                   </div>
                 </div>
@@ -194,7 +187,7 @@ export default function Login() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-gray-700 font-semibold">
-                      {t("login.label_phone")}
+                      Telefone
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -206,13 +199,13 @@ export default function Login() {
                         onChange={(e) => handlePhoneChange(e.target.value)}
                         required
                         disabled={loading}
-                        className="pl-10 h-11 border-gray-300 border-2 focus:border-cyan-500 focus:ring-cyan-500 rounded-lg transition-all"
+                        className="pl-10 h-11 border-gray-300 border-2 focus:border-green-500 focus:ring-green-500 rounded-lg transition-all"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cpf" className="text-gray-700 font-semibold">
-                      {t("login.label_cpf")}
+                      CPF
                     </Label>
                     <div className="relative">
                       <ShieldCheck className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -224,7 +217,7 @@ export default function Login() {
                         onChange={(e) => handleCpfChange(e.target.value)}
                         required
                         disabled={loading}
-                        className="pl-10 h-11 border-gray-300 border-2 focus:border-cyan-500 focus:ring-cyan-500 rounded-lg transition-all"
+                        className="pl-10 h-11 border-gray-300 border-2 focus:border-green-500 focus:ring-green-500 rounded-lg transition-all"
                       />
                     </div>
                   </div>
@@ -234,19 +227,19 @@ export default function Login() {
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700 font-semibold">
-                  {t("login.label_email")}
+                  Email
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder={t("login.placeholder_email")}
+                    placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="pl-10 h-11 border-gray-300 border-2 focus:border-cyan-500 focus:ring-cyan-500 rounded-lg transition-all"
+                    className="pl-10 h-11 border-gray-300 border-2 focus:border-green-500 focus:ring-green-500 rounded-lg transition-all"
                   />
                 </div>
               </div>
@@ -254,7 +247,7 @@ export default function Login() {
               {/* Senha */}
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700 font-semibold">
-                  {t("login.label_password")}
+                  Senha
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -266,7 +259,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    className="pl-10 h-11 border-gray-300 border-2 focus:border-cyan-500 focus:ring-cyan-500 rounded-lg transition-all"
+                    className="pl-10 h-11 border-gray-300 border-2 focus:border-green-500 focus:ring-green-500 rounded-lg transition-all"
                   />
                 </div>
               </div>
@@ -275,22 +268,22 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 text-base mt-6"
+                className="w-full h-11 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 text-base mt-6"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    {isLogin ? t("login.button_loading_login") : t("login.button_loading_signup")}
+                    {isLogin ? "Entrando..." : "Criando conta..."}
                   </div>
                 ) : (
-                  <>{isLogin ? t("login.button_login") : t("login.button_signup")}</>
+                  <>{isLogin ? "Entrar" : "Criar Conta"}</>
                 )}
               </Button>
 
               {/* Alternador */}
               <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-600">
-                  {isLogin ? t("login.switch_no_account") : t("login.switch_has_account")}
+                  {isLogin ? "Não tem conta?" : "Já tem conta?"}
                 </p>
                 <button
                   type="button"
@@ -300,9 +293,9 @@ export default function Login() {
                     setEmail("");
                     setPassword("");
                   }}
-                  className="text-sm font-semibold text-cyan-600 hover:text-cyan-700 underline transition-colors"
+                  className="text-sm font-semibold text-green-600 hover:text-green-700 underline transition-colors"
                 >
-                  {isLogin ? t("login.switch_signup") : t("login.switch_login")}
+                  {isLogin ? "Cadastre-se" : "Faça login"}
                 </button>
               </div>
             </form>
@@ -310,21 +303,15 @@ export default function Login() {
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200 text-center">
               <p className="text-xs text-gray-500">
-                {t("login.footer_terms")}{" "}
-                <a href={toL("/termos-garantia")} className="text-cyan-600 hover:underline">
-                  {t("info.terms")}
+                Ao criar uma conta ou fazer login, você concorda com nossos{" "}
+                <a href="/termos-garantia" className="text-green-600 hover:underline">
+                  Termos de Serviço
                 </a>
               </p>
             </div>
           </div>
 
-          {/* Botão Voltar */}
-          <button
-            onClick={() => navigate(toL("/"))}
-            className="mt-6 text-center text-gray-600 hover:text-gray-900 font-medium transition-colors hover:underline"
-          >
-            ← {t("common.back_home")}
-          </button>
+
         </div>
       </div>
     </div>
