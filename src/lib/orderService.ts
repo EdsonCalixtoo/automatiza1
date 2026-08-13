@@ -44,13 +44,13 @@ export async function createOrder(payload: {
         .single();
 
     if (error) throw new Error(`Erro ao criar pedido: ${error.message}`);
-    
+
     // Tentar enviar e-mail de "Novo Pedido" e "Aguardando Pagamento"
     try {
         await supabase.functions.invoke('send-order-email', {
-            body: { 
-                order: data, 
-                type: 'novo_pedido' 
+            body: {
+                order: data,
+                type: 'novo_pedido'
             }
         });
     } catch (e) {
@@ -79,7 +79,7 @@ export async function getOrder(orderId: string) {
  */
 export async function updateOrderStatus(
     orderId: string,
-    status: "aguardando_pagamento" | "pago" | "cancelado",
+    status: "aguardando_pagamento" | "pago" | "cancelado" | "recusado",
     extra?: { pix_code?: string; pix_qrcode?: string; mp_payment_id?: string; cartao_final?: string }
 ) {
     const updateData: any = { status };
@@ -102,13 +102,24 @@ export async function updateOrderStatus(
     if (status === "pago") {
         try {
             await supabase.functions.invoke('send-order-email', {
-                body: { 
-                    order: order, 
-                    type: 'pagamento_aprovado' 
+                body: {
+                    order: order,
+                    type: 'pagamento_aprovado'
                 }
             });
         } catch (e) {
             console.warn('Erro ao disparar e-mail de pagamento:', e);
+        }
+    } else if (status === "cancelado" || status === "recusado") {
+        try {
+            await supabase.functions.invoke('send-order-email', {
+                body: {
+                    order: order,
+                    type: 'pedido_cancelado'
+                }
+            });
+        } catch (e) {
+            console.warn('Erro ao disparar e-mail de cancelamento:', e);
         }
     }
 
@@ -122,7 +133,7 @@ export async function listOrders() {
     const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .order("data_criacao", { ascending: false });
+        .order("created_at", { ascending: false });
 
     if (error) throw new Error(`Erro ao buscar pedidos: ${error.message}`);
     return data;
@@ -146,7 +157,7 @@ export async function deleteOrder(orderId: string) {
  */
 export async function syncOrderWithMercadoPago(orderId: string, mpPaymentId: string) {
     const { supabaseUrl, supabaseAnonKey } = (await import("@/lib/supabase"));
-    
+
     const response = await fetch(`${supabaseUrl}/functions/v1/mercadopago-payment`, {
         method: "POST",
         headers: {
@@ -165,7 +176,7 @@ export async function syncOrderWithMercadoPago(orderId: string, mpPaymentId: str
     }
 
     const data = await response.json();
-    
+
     // Mapear status do MP para nosso sistema
     const statusMapping: Record<string, string> = {
         'approved': 'pago',
@@ -176,14 +187,14 @@ export async function syncOrderWithMercadoPago(orderId: string, mpPaymentId: str
     };
 
     const novoStatus = statusMapping[data.status] || 'aguardando';
-    
+
     // Se o status for diferente do atual ou for 'pago', atualizar no banco
     await updateOrderStatus(orderId, novoStatus as any);
-    
-    return { 
-        status: novoStatus, 
-        mpStatus: data.status, 
-        detail: data.status_detail 
+
+    return {
+        status: novoStatus,
+        mpStatus: data.status,
+        detail: data.status_detail
     };
 }
 

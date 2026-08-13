@@ -30,7 +30,7 @@ serve(async (req: Request) => {
 
         // Extrair ID
         const mpPaymentId = body?.data?.id || (body?.resource ? body.resource.split('/').pop() : null) || body.id;
-        
+
         if (!mpPaymentId || isNaN(Number(mpPaymentId))) {
             return json({ success: true, message: "ID de simulação ou vazio. Ignorado." });
         }
@@ -49,12 +49,12 @@ serve(async (req: Request) => {
         if (!mpResponse.ok) {
             const errBody = await mpResponse.text();
             console.warn(`Aviso de Erro MP [${mpResponse.status}]:`, errBody);
-            
+
             // SEMPRE respondemos 200 para testes e simulações ficarem verdes
-            return json({ 
-                success: true, 
+            return json({
+                success: true,
                 message: `Recebido, mas MP retornou ${mpResponse.status}. Provavelmente é uma simulação.`,
-                debug: errBody 
+                debug: errBody
             });
         }
 
@@ -71,7 +71,7 @@ serve(async (req: Request) => {
         if (supabaseUrl && supabaseServiceKey) {
             try {
                 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-                
+
                 // Mapeamento
                 const statusMapping: Record<string, string> = {
                     'approved': 'pago',
@@ -94,14 +94,27 @@ serve(async (req: Request) => {
                 }).catch(() => null);
 
                 // Atualizar Pedido
-                await supabase.from('orders').update({
+                const { data: updatedOrder, error: updateError } = await supabase.from('orders').update({
                     status: novoStatus,
                     mp_payment_id: String(mpPaymentId),
                     cartao_final: mpData.card?.last_four_digits || null,
                     ...(novoStatus === 'pago' ? { data_pagamento: new Date().toISOString() } : {})
-                }).eq('id', orderId);
+                }).eq('id', orderId).select().single();
 
                 console.log(`✅ Sucesso no banco para pedido ${orderId}`);
+
+                // Enviar email automático dependendo do novo status
+                if (updatedOrder) {
+                    if (novoStatus === 'pago') {
+                        await supabase.functions.invoke('send-order-email', {
+                            body: { order: updatedOrder, type: 'pagamento_aprovado' }
+                        }).catch((e: any) => console.error('Erro ao enviar email de aprovação:', e));
+                    } else if (novoStatus === 'cancelado' || novoStatus === 'recusado') {
+                        await supabase.functions.invoke('send-order-email', {
+                            body: { order: updatedOrder, type: 'pedido_cancelado' }
+                        }).catch((e: any) => console.error('Erro ao enviar email de cancelamento:', e));
+                    }
+                }
 
             } catch (dbErr: any) {
                 console.error('Erro de Banco:', dbErr.message);
