@@ -46,27 +46,27 @@ const Products = () => {
       const matchesName = p.name.toLowerCase().includes(searchLower);
       const matchesSubcat = p.subcategory?.toLowerCase().includes(searchLower);
       const matchesCat = p.category?.toLowerCase().includes(searchLower);
-      
+
       if (!matchesName && !matchesSubcat && !matchesCat) {
         return false;
       }
     }
 
     if (selectedCategory === "all") return true;
-    
+
     // Se a categoria selecionada for um veículo (dinâmica)
     const isVehicleCategory = vehicleCategories.some(c => c.key === selectedCategory);
     if (isVehicleCategory) {
       const catData = categories.find(c => c.key === selectedCategory);
-      const matchesCategory = p.category === selectedCategory || 
-                             p.category === catData?.name ||
-                             (p.category === "Portas Automáticas" && p.subcategory === catData?.name);
-      
+      const matchesCategory = p.category === selectedCategory ||
+        p.category === catData?.name ||
+        (p.category === "Portas Automáticas" && p.subcategory === catData?.name);
+
       if (!matchesCategory) return false;
       if (selectedSubcategory === "all") return true;
       return p.subcategory === selectedSubcategory;
     }
-    
+
     // Categorias fixas (Kits, etc) baseadas no DB
     const catDataOther = categories.find(c => c.key === selectedCategory);
     return p.category === selectedCategory || p.category === catDataOther?.name;
@@ -82,7 +82,7 @@ const Products = () => {
       {/* Page Header */}
       <section className="relative bg-[#0a192f] pt-32 pb-20 overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-[#071936] to-slate-900" />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <h1 className="font-heading text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
@@ -100,7 +100,7 @@ const Products = () => {
         <div className="container mx-auto px-4">
           {/* Mobile Filter Toggle */}
           <div className="lg:hidden mb-6 sticky top-[90px] z-30">
-            <button 
+            <button
               onClick={() => setIsFilterOpen(true)}
               className="w-full bg-white border-2 border-green-100 p-4 rounded-2xl flex items-center justify-between shadow-sm"
             >
@@ -119,7 +119,7 @@ const Products = () => {
               isFilterOpen ? "fixed inset-0 z-[100] bg-white p-8 overflow-y-auto block" : "hidden"
             )}>
               {isFilterOpen && (
-                <button 
+                <button
                   onClick={() => setIsFilterOpen(false)}
                   className="lg:hidden absolute top-8 right-8 p-3 rounded-2xl bg-gray-100 text-gray-900"
                 >
@@ -142,15 +142,14 @@ const Products = () => {
                         setSelectedSubcategory("all");
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${
-                        selectedCategory === "all"
+                      className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${selectedCategory === "all"
                           ? "bg-green-600 text-white"
                           : "text-gray-700 hover:bg-gray-100"
-                      }`}
+                        }`}
                     >
                       📦 Todos os Produtos
                     </button>
-                    
+
                     {/* Peças & Consumíveis (Movido para cá) */}
                     {pecasCategory && (
                       <div key={pecasCategory.key}>
@@ -160,23 +159,21 @@ const Products = () => {
                             setSelectedCategory(pecasCategory.key);
                             setSelectedSubcategory("all");
                           }}
-                          className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${
-                            selectedCategory === pecasCategory.key && selectedSubcategory === "all"
+                          className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${selectedCategory === pecasCategory.key && selectedSubcategory === "all"
                               ? "bg-green-100 text-green-700"
                               : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <span>📦</span>
                             <span>{cleanName(pecasCategory.name)}</span>
                           </div>
-                          <ChevronDown 
-                            className={`w-4 h-4 transition-transform flex-shrink-0 ${
-                              expandedCategory === pecasCategory.key ? "rotate-180" : ""
-                            }`}
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform flex-shrink-0 ${expandedCategory === pecasCategory.key ? "rotate-180" : ""
+                              }`}
                           />
                         </button>
-                        
+
                         {expandedCategory === pecasCategory.key && (
                           <div className="ml-4 mt-2 space-y-1 border-l-2 border-cyan-200 pl-0">
                             {subcategories.filter(s => s.categoryId === pecasCategory.id).map((subcat) => (
@@ -187,11 +184,10 @@ const Products = () => {
                                   setSelectedSubcategory(subcat.name);
                                   setIsFilterOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${
-                                  selectedSubcategory === subcat.name
+                                className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${selectedSubcategory === subcat.name
                                     ? "bg-green-600 text-white"
                                     : "text-gray-600 hover:bg-gray-100"
-                                }`}
+                                  }`}
                               >
                                 {subcat.name}
                               </button>
@@ -209,11 +205,10 @@ const Products = () => {
                           setSelectedSubcategory("all");
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${
-                          selectedCategory === cat.key && selectedSubcategory === "all"
+                        className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium ${selectedCategory === cat.key && selectedSubcategory === "all"
                             ? "bg-green-600 text-white"
                             : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                          }`}
                       >
                         {cat.name.includes("Kit") ? "🏆" : "🔧"} {cleanName(cat.name)}
                       </button>
@@ -233,16 +228,15 @@ const Products = () => {
                             setSelectedCategory(catData.key);
                             setSelectedSubcategory("all");
                           }}
-                          className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${
-                            selectedCategory === catData.key && selectedSubcategory === "all"
+                          className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 font-medium flex items-center justify-between gap-3 ${selectedCategory === catData.key && selectedSubcategory === "all"
                               ? "bg-green-100 text-green-700"
                               : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             {CATEGORY_LOGOS[catData.key] ? (
-                              <img 
-                                src={CATEGORY_LOGOS[catData.key]} 
+                              <img
+                                src={CATEGORY_LOGOS[catData.key]}
                                 alt={catData.name}
                                 className="h-6 w-6 object-contain"
                               />
@@ -251,13 +245,12 @@ const Products = () => {
                             )}
                             <span>{cleanName(catData.name)}</span>
                           </div>
-                          <ChevronDown 
-                            className={`w-4 h-4 transition-transform flex-shrink-0 ${
-                              expandedCategory === catData.key ? "rotate-180" : ""
-                            }`}
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform flex-shrink-0 ${expandedCategory === catData.key ? "rotate-180" : ""
+                              }`}
                           />
                         </button>
-                        
+
                         {expandedCategory === catData.key && (
                           <div className="ml-4 mt-2 space-y-1 border-l-2 border-cyan-200 pl-0">
                             {subcategories.filter(s => s.categoryId === catData.id).map((subcat) => (
@@ -268,11 +261,10 @@ const Products = () => {
                                   setSelectedSubcategory(subcat.name);
                                   setIsFilterOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${
-                                  selectedSubcategory === subcat.name
+                                className={`w-full text-left px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium ${selectedSubcategory === subcat.name
                                     ? "bg-green-600 text-white"
                                     : "text-gray-600 hover:bg-gray-100"
-                                }`}
+                                  }`}
                               >
                                 {subcat.name}
                               </button>
@@ -285,7 +277,7 @@ const Products = () => {
                 </div>
                 {isFilterOpen && (
                   <div className="mt-12 lg:hidden">
-                    <Button 
+                    <Button
                       onClick={() => setIsFilterOpen(false)}
                       className="w-full bg-green-600 py-6 rounded-2xl font-bold"
                     >
@@ -320,7 +312,7 @@ const Products = () => {
                           </span>
                         )}
                       </div>
-                      <img 
+                      <img
                         src={product.image || (product.category === 'pecas' ? "https://placehold.co/600x600/f8fafc/94a3b8?text=Sem+Foto" : "/ftproduto.jpeg")}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -366,25 +358,20 @@ const Products = () => {
                       <div className="mt-auto space-y-2">
                         <button
                           onClick={() => {
-                            let finalPrice = product.price;
-                            if (product.name.toLowerCase().includes("sem sensor")) finalPrice = 1430;
-                            else if (product.name.toLowerCase().includes("com sensor")) finalPrice = 1750;
-                            
                             addToCart({
                               id: product.id,
                               name: product.name,
-                              price: finalPrice,
+                              price: product.price,
                               image: product.image,
                               quantity: 1,
                               category: product.category || "",
                             });
                             setAddedProduct({ id: product.id, name: product.name });
                           }}
-                          className={`w-full h-12 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md ${
-                            addedToCart[product.id]
+                          className={`w-full h-12 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md ${addedToCart[product.id]
                               ? "bg-blue-600 text-white"
                               : "bg-slate-900 text-white hover:bg-blue-600"
-                          }`}
+                            }`}
                         >
                           <ShoppingCart className="w-4 h-4" />
                           {addedToCart[product.id] ? "ADICIONADO" : "COMPRAR AGORA"}
@@ -412,7 +399,7 @@ const Products = () => {
         </div>
       </section>
 
-      <CartNotification 
+      <CartNotification
         isOpen={!!addedProduct}
         productName={addedProduct?.name}
         onClose={() => setAddedProduct(null)}
